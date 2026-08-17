@@ -79,6 +79,40 @@ Publication information will be added once the article is published.
 
 License information will be added once the appropriate license for the source code and associated materials has been defined.
 
+## PowerFactory preprocessing
+
+The repository includes a PowerFactory Python script used to extract the
+network data required by the subsequent Python-based analysis.
+
+The script is:
+
+`powerfactory/preprocessing/export_network_data.py`
+
+### Requirements
+
+- DIgSILENT PowerFactory with Python Script (`ComPython`) support.
+- A compatible PowerFactory model of the test system.
+
+### Configuration
+
+Before executing the script, open `export_network_data.py` and modify the
+`OUTPUT_DIR` variable according to the location of the repository on the
+local computer.
+
+For example:
+
+OUTPUT_DIR = r"C:\Path\to\Grid-strength-assessment\data\example\IEEE39"
+
+The script creates the output directory if it does not already exist.
+
+The script generates the following files:
+
+Ybus_export.csv
+corrientes_generadores.csv
+tensiones_nodos.csv
+potencias_activas_generadores.csv
+cortocircuito_trifasico.csv
+
 ## Preprocessing workflow
 
 The preprocessing scripts automatically detect the available test systems

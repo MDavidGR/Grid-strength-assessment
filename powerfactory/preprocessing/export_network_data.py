@@ -1,5 +1,15 @@
 import powerfactory as pf
 import numpy as np
+import os
+import csv
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+# Path where the output CSV files will be saved.
+# Modify this path according to your local environment.
+OUTPUT_DIR = r"C:\Users\YourUser\Path\Grid-strength-assessment\data\example\IEEE39"
 
 app = pf.GetApplication()
 app.ClearOutputWindow()
@@ -172,7 +182,7 @@ import os
 import csv
 
 # 🔧 Ruta donde guardar el archivo
-output_path = r"C:\Users\mgomezr\Documents\Codigos\Eje39N\Ybus_export.csv"
+output_path = os.path.join(OUTPUT_DIR, "Ybus_export.csv")
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 with open(output_path, mode="w", newline="") as file:
@@ -215,11 +225,10 @@ if status != 0:
 app.PrintPlain("✅ Flujo de carga ejecutado correctamente.\n")
 
 # Directorio de salida
-output_dir = r"C:\Users\mgomezr\Documents\Codigos\Eje39N"
-os.makedirs(output_dir, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-gen_path = os.path.join(output_dir, "corrientes_generadores.csv")
-term_path = os.path.join(output_dir, "tensiones_nodos.csv")
+gen_path = os.path.join(OUTPUT_DIR, "corrientes_generadores.csv")
+term_path = os.path.join(OUTPUT_DIR, "tensiones_nodos.csv")
 
 # 🔹 Generadores
 gen_classes = ["ElmSym", "ElmGenstat", "ElmPvsys", "ElmPvg", "ElmVsccon"]
@@ -257,7 +266,7 @@ with open(term_path, mode="w", newline="") as f_bus:
             app.PrintPlain(f"⚠️ Terminal {term.loc_name} sin tensión medida: {e}\n")
 
 # ➤ Exportar potencias activas (pgini) de generadores en MW con nodo conectado usando bus1.cterm
-pot_path = os.path.join(output_dir, "potencias_activas_generadores.csv")
+pot_path = os.path.join(OUTPUT_DIR, "potencias_activas_generadores.csv")
 
 with open(pot_path, mode="w", newline="") as f_pot:
     writer = csv.writer(f_pot, delimiter=";")
@@ -314,7 +323,7 @@ app.PrintPlain("✅ Cálculo de cortocircuito trifásico ejecutado correctamente
 nodos_sc = app.GetCalcRelevantObjects("*.ElmTerm")
 
 # Archivo CSV de salida
-sc_path = os.path.join(output_dir, "cortocircuito_trifasico.csv")
+sc_path = os.path.join(OUTPUT_DIR, "cortocircuito_trifasico.csv")
 
 with open(sc_path, mode="w", newline="") as f_sc:
     writer = csv.writer(f_sc, delimiter=";")
