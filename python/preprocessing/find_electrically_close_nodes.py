@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+from pathlib import Path
 
 def find_electrically_close_nodes(
     input_file="Zbus.csv",
@@ -24,7 +24,7 @@ def find_electrically_close_nodes(
     zbus_df = pd.read_csv(input_file, index_col=0)
 
     # Convert values to complex numbers
-    zbus = zbus_df.map(
+    zbus = zbus_df.applymap(
         lambda value: complex(str(value).replace("i", "j"))
     ).to_numpy()
 
@@ -76,6 +76,30 @@ def find_electrically_close_nodes(
         f"Results saved to: {output_file}"
     )
 
-
 if __name__ == "__main__":
-    find_electrically_close_nodes()
+
+    # Root directory of the repository
+    ROOT_DIR = Path(__file__).resolve().parents[2]
+
+    # Directory containing the example systems
+    EXAMPLES_DIR = ROOT_DIR / "data" / "example"
+
+    # Search for all example directories containing Zbus.csv
+    zbus_files = list(EXAMPLES_DIR.glob("*/Zbus.csv"))
+
+    if not zbus_files:
+        print("No Zbus.csv files were found in data/example/")
+    else:
+
+        for input_file in zbus_files:
+
+            output_file = input_file.parent / "pares_nodos_cercanos.csv"
+
+            print("\n----------------------------------------")
+            print(f"Processing example: {input_file.parent.name}")
+            print("----------------------------------------")
+
+            find_electrically_close_nodes(
+                input_file=input_file,
+                output_file=output_file
+            )

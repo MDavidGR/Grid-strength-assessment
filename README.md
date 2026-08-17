@@ -78,3 +78,96 @@ Publication information will be added once the article is published.
 ## License
 
 License information will be added once the appropriate license for the source code and associated materials has been defined.
+
+## Preprocessing workflow
+
+The preprocessing scripts automatically detect the available test systems
+inside `data/example/`.
+
+Each example must contain a `Ybus_export.csv` file.
+
+For example:
+
+data/example/
+├── IEEE9/
+│   └── Ybus_export.csv
+└── IEEE39/
+    └── Ybus_export.csv
+
+### 1. Calculate Zbus
+
+The script `calculate_zbus.py` reads the Ybus matrix exported from
+DIgSILENT PowerFactory and calculates the corresponding bus impedance matrix
+Zbus.
+
+Run:
+
+python python/preprocessing/calculate_zbus.py
+
+The script searches for Ybus_export.csv in each example directory and
+generates Zbus.csv in the corresponding directory.
+
+For example:
+
+data/example/
+├── IEEE9/
+│   └── Ybus_export.csv
+    └── Zbus.csv
+└── IEEE39/
+    └── Ybus_export.csv
+    └── Zbus.csv
+
+### 2. Identify electrically close buses
+
+The script find_electrically_close_nodes.py uses the calculated Zbus matrix
+to evaluate the electrical proximity between bus pairs.
+
+Run:
+
+python python/preprocessing/find_electrically_close_nodes.py
+
+The script searches for Zbus.csv in each example directory and generates
+pares_nodos_cercanos.csv in the corresponding directory.
+
+For example:
+
+data/example/
+├── IEEE9/
+│   └── Ybus_export.csv
+    └── Zbus.csv
+    └── pares_nodos_cercanos.csv
+└── IEEE39/
+    └── Ybus_export.csv
+    └── Zbus.csv
+    └── pares_nodos_cercanos.csv
+
+### Electrical proximity criterion
+
+For each pair of buses, the methodology evaluates the relationship between
+the mutual impedance and the self-impedance of the corresponding bus.
+
+The resulting bus pairs are sorted according to the criterion implemented
+in `find_electrically_close_nodes.py`.
+
+The resulting file is subsequently used to identify electrically close
+buses for the system-strength assessment methodology.
+
+## Example data
+
+The `data/example/IEEE39/` and `data/example/IEEE9/` directory contains 
+intermediate files generated from the IEEE 39-bus and IEEE 9-bus test system.
+
+These files are provided so that the Python preprocessing workflow can be
+reproduced without requiring DIgSILENT PowerFactory.
+
+The example workflow starts from:
+
+`Ybus_export.csv`
+
+and generates:
+
+`Zbus.csv`
+
+and:
+
+`pares_nodos_cercanos.csv`.

@@ -1,7 +1,7 @@
 import re
 import pandas as pd
 import numpy as np
-
+from pathlib import Path
 
 def parse_complex(value):
     """
@@ -49,7 +49,7 @@ def calculate_zbus(input_file="Ybus_export.csv",
     ybus = pd.read_csv(input_file, index_col=0)
 
     # Convert the matrix to complex numbers
-    ybus_complex = ybus.map(parse_complex).to_numpy()
+    ybus_complex = ybus.applymap(parse_complex).to_numpy()
 
     # Calculate Zbus
     try:
@@ -72,4 +72,29 @@ def calculate_zbus(input_file="Ybus_export.csv",
 
 
 if __name__ == "__main__":
-    calculate_zbus()
+
+    # Root directory of the repository
+    ROOT_DIR = Path(__file__).resolve().parents[2]
+
+    # Directory containing the example systems
+    EXAMPLES_DIR = ROOT_DIR / "data" / "example"
+
+    # Search for all example directories containing Ybus_export.csv
+    ybus_files = list(EXAMPLES_DIR.glob("*/Ybus_export.csv"))
+
+    if not ybus_files:
+        print("No Ybus_export.csv files were found in data/example/")
+    else:
+
+        for input_file in ybus_files:
+
+            output_file = input_file.parent / "Zbus.csv"
+
+            print("\n----------------------------------------")
+            print(f"Processing example: {input_file.parent.name}")
+            print("----------------------------------------")
+
+            calculate_zbus(
+                input_file=input_file,
+                output_file=output_file
+            )
