@@ -1,0 +1,12 @@
+Nodo (Terminal);Tensión m:u [p.u.]
+Bus 1;1.0000
+Bus 2;1.0000
+Bus 3;1.0000
+Bus 4;0.9730
+Bus 5;0.9706
+Bus 6;0.9711
+Bus 7;0.9727
+Bus 8;0.9707
+Bus 9;0.9721
+PV1 LV;0.9727
+PV2 LV;0.9730
