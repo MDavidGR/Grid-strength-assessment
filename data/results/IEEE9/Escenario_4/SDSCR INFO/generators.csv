@@ -1,0 +1,4 @@
+name,bus,pg_mw,qg_mvar,rated_mva,status
+G1,Bus 1,247.500000,98.118599,247.500000,InService
+G2,Bus 2,163.199997,83.517207,192.000000,InService
+G3,Bus 3,-442.484519,76.800003,128.000000,InService

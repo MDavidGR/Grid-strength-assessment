@@ -1,0 +1,3 @@
+name,type,p,q,s,v_set,bus,v_actual,control_mode
+PV1,PV System,300000.0,68400.5859375,100000000.0,1.0,PV1 LV,0.5295847879328667,Grid-Following
+PV2,PV System,190000.015625,43320.03125,100000000.0,1.0,PV2 LV,0.5122965848364701,Grid-Following

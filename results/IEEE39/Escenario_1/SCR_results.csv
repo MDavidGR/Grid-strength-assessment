@@ -1,0 +1,3 @@
+﻿Escenario,Generador,Potencia_Generador_MW,Potencia_Cortocircuito_MVA,SCR_scr
+Escenario_1,PV2,110.0,3801.9946,34.563587272727275
+Escenario_1,PV1,300.0,1824.0606,6.080202

@@ -1,0 +1,4 @@
+name,bus,pl_mw,ql_mvar
+Load A,Bus 5,125.000000,50.000000
+Load B,Bus 6,90.000000,30.000000
+Load C,Bus 8,100.000000,35.000000

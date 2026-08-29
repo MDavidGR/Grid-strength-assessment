@@ -1,0 +1,6 @@
+Nombre;Tipo;Nodo Conectado;Potencia Activa pgini [MW]
+G1;ElmSym;Bus 1;247,4999
+G2;ElmSym;Bus 2;163,1999
+G3;ElmSym;Bus 3;-506,2854
+PV1;ElmPvsys;PV1 LV;208,7000
+PV2;ElmPvsys;PV2 LV;206,1300
