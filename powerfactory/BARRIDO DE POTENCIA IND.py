@@ -8,14 +8,23 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # === Inicialización de PowerFactory ===
-
 app = pf.GetApplication()
 app.ClearOutputWindow()
 
-# ============================================================
-# CONFIGURACIÓN DEL USUARIO
-# Modificar estos valores antes de ejecutar el algoritmo
-# ============================================================
+# === Configuración de parámetros MODIFICADOS para límite superior ===
+MAX_VOLTAGE = 1.1  # Umbral de voltaje máximo (p.u.)
+P_STEP = 20  # Paso de potencia en MW
+P_MAX = 400  # Máxima potencia por generador en MW
+Z_THRESHOLD = 0.1  # Umbral de impedancia
+
+# === Número de puntos a extraer ===
+NUM_POINTS = 30  # Empezar con pocos puntos para pruebas
+
+# === PUNTO CONOCIDO CRÍTICO - DEBES ENCONTRAR UNO PARA TU SISTEMA ===
+# Para límite superior, necesitas un punto donde U ≈ 1.1 pu con BAJA potencia
+# IMPORTANTE: Busca un punto donde la tensión sea cercana a 1.1 p.u.
+KNOWN_POINT = {"P1_MW": 405, "P2_MW": 1.0}  # AJUSTA ESTO - usar float explícito
+OPPOSITE_POINT = {"P1_MW": 1.0, "P2_MW": 1050.0}  # Punto opuesto
 
 # ------------------------------------------------------------
 # RUTAS
@@ -47,43 +56,7 @@ print(f"📌 Ejemplo: {EXAMPLE}")
 print(f"📥 Entrada: {Z_IMPORT_PATH}")
 print(f"📤 Salida:  {EXPORT_PATH}")
 
-# ------------------------------------------------------------
-# CRITERIO DE CERCANÍA ELÉCTRICA
-# ------------------------------------------------------------
-
-Z_THRESHOLD = 0.2 #Determinar valor que determina la cercania electrica
-
-# ------------------------------------------------------------
-# PUNTO CONOCIDO Y PUNTO OPUESTO
-# ------------------------------------------------------------
-# KNOWN_POINT:
-# Punto de operación previamente identificado que se encuentra aproximadamente sobre el límite de tensión definido.
-# Estos valores dependen del sistema de prueba, de los generadores seleccionados y del escenario analizado.
-# El usuario debe ajustarlos antes de ejecutar el algoritmo.
-
-# OPPOSITE_POINT:
-# Punto utilizado como extremo opuesto para generar los valores de P mediante np.linspace().
-# Estos valores deben ajustarse al rango de potencia del sistema y del escenario analizado.
-
-KNOWN_POINT = {
-    "P1_MW": 405.0,
-    "P2_MW": 1.0
-}
-
-OPPOSITE_POINT = {
-    "P1_MW": 1.0,
-    "P2_MW": 1050.0
-}
-
-# ------------------------------------------------------------
-# PARÁMETROS DEL BARRIDO
-# ------------------------------------------------------------
-
-MAX_VOLTAGE = 1.1
-P_STEP = 20
-P_MAX = 400
-NUM_POINTS = 30
-
+##############################################################
 impedance_data = {}
 
 try:
@@ -460,11 +433,11 @@ def run_upper_limit_analysis():
             continue
         
         # === Exportar resultados ===
-        pair_folder = os.path.join(EXPORT_PATH, f"{g1.loc_name}_{g2.loc_name}")
+        pair_folder = os.path.join(EXPORT_PATH, f"IND_{g1.loc_name}_{g2.loc_name}")
         os.makedirs(pair_folder, exist_ok=True)
         
         # Exportar CSV
-        csv_file = os.path.join(pair_folder,f"{EXAMPLE}_limite_superior_{g1.loc_name}_{g2.loc_name}.csv")
+        csv_file = os.path.join(pair_folder,f"{EXAMPLE}_IND_{g1.loc_name}_{g2.loc_name}.csv")
         with open(csv_file, 'w', newline='', encoding='utf-8') as f:
             fieldnames = ["Indice", "P1_MW", "P2_MW", "Bus_Critico", 
                          "U_Critico_pu", "Bus_G1", "Bus_G2", "Anomalia_Detectada"]
@@ -512,7 +485,7 @@ def run_upper_limit_analysis():
 
 # === EJECUCIÓN ===
 try:
-    # PRIMERO: Encontrar un punto conocido
+    # PRIMERO: Encontrar un punto conocido (descomenta la siguiente línea)
      #find_known_point()
     
     # LUEGO: Ejecutar análisis completo
