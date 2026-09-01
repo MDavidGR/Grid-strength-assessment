@@ -26,17 +26,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # Ejemplo que se desea procesar
 EXAMPLE = "IEEE39"
 
+#Tipo de genración
+GENTIP = "CAP" # Si es Inductivo "IND", si es capacitivo "CAP"
+
 # ------------------------------------------------------------
 # ENTRADA:
 # Carpeta donde extract_scenario_data.py guardó los escenarios
 # ------------------------------------------------------------
-INPUT_PATH = REPO_ROOT / "data" / "results" / EXAMPLE
+INPUT_PATH = REPO_ROOT / "data" / "results" / EXAMPLE / GENTIP
 
 # ------------------------------------------------------------
 # SALIDA:
 # Carpeta donde se guardarán los resultados de los indicadores
 # ------------------------------------------------------------
-OUTPUT_PATH = REPO_ROOT / "results" / EXAMPLE
+OUTPUT_PATH = REPO_ROOT / "results" / EXAMPLE / GENTIP
 
 # Crear la carpeta de salida si no existe
 OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
@@ -427,12 +430,13 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
     print(f"  🔄 Calculando GSIM para {escenario_nombre}...")
     
     # Construir rutas de archivos para este escenario
-    ruta_positive = os.path.join(escenario_input_path, "Positive")
+    ruta_positive1 = os.path.join(escenario_input_path, "Positive")
+    ruta_positive2 = os.path.join(escenario_output_path, "Positive")
     ruta_datos_gsim = os.path.join(escenario_input_path, "Datos GSIM")
     
     archivos_requeridos = {
-        "Zbus": os.path.join(ruta_positive, "Zbus.csv"),
-        "cortocircuito": os.path.join(ruta_positive, "cortocircuito_trifasico.csv"),
+        "Zbus": os.path.join(ruta_positive2, "Zbus.csv"),
+        "cortocircuito": os.path.join(ruta_positive1, "cortocircuito_trifasico.csv"),
         "pvsys": os.path.join(ruta_datos_gsim, "ieee9bus_pvsys.csv"),
         "transformers": os.path.join(ruta_datos_gsim, "ieee9bus_transformers.csv")
     }
@@ -1325,8 +1329,11 @@ def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
     print(f"  🔄 Calculando SDSCR para {escenario_nombre}...")
     
     # Construir rutas de archivos para este escenario
-    ruta_positive = os.path.join(escenario_input_path, "Positive")
+    ruta_positive1 = os.path.join(escenario_input_path, "Positive")
+    ruta_positive2 = os.path.join(escenario_output_path, "Positive")
+    #print("La ruta Positive SDSCR es:",ruta_positive)
     ruta_sdscr_info = os.path.join(escenario_input_path, "SDSCR INFO")
+    #print("La ruta sdscr es:",ruta_sdscr_info)
     
     archivos_requeridos = {
         "buses": os.path.join(ruta_sdscr_info, "buses.csv"),
@@ -1335,9 +1342,9 @@ def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
         "branches": os.path.join(ruta_sdscr_info, "branches.csv"),
         "loads": os.path.join(ruta_sdscr_info, "loads.csv"),
         "transformers": os.path.join(ruta_sdscr_info, "transformers.csv"),
-        "cortocircuito": os.path.join(ruta_positive, "cortocircuito_trifasico.csv"),
-        "Ybus": os.path.join(ruta_positive, "Ybus_export.csv"),
-        "Zbus": os.path.join(ruta_positive, "Zbus.csv")
+        "cortocircuito": os.path.join(ruta_positive1, "cortocircuito_trifasico.csv"),
+        "Ybus": os.path.join(ruta_positive1, "Ybus_export.csv"),
+        "Zbus": os.path.join(ruta_positive2, "Zbus.csv")
     }
     
     # Verificar que existan todos los archivos requeridos
@@ -1384,7 +1391,7 @@ def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
         traceback.print_exc()
         # Intentar limpiar carpeta temporal en caso de error
         try:
-            temp_sdscr_folder = os.path.join(escenario_path, "SDSCR_temp")
+            temp_sdscr_folder = os.path.join(escenario_output_path, "SDSCR_temp")
             if os.path.exists(temp_sdscr_folder):
                 shutil.rmtree(temp_sdscr_folder)
         except:
@@ -1520,7 +1527,7 @@ def procesar_escenario_completo(escenario_input_path, escenario_output_path):
     scr_exitoso = procesar_scr_escenario(escenario_input_path, escenario_output_path)
     
     # Paso 7: Compilar resultados
-    compilacion_exitosa = compilar_resultados_escenario(escenario_path)
+    compilacion_exitosa = compilar_resultados_escenario(escenario_output_path)
     
     return (zbus_exitoso, gsim_exitoso, nrscr_exitoso, lscr_exitoso, 
             sdscr_exitoso, scr_exitoso, compilacion_exitosa)

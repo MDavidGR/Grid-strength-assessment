@@ -4,16 +4,25 @@ import pandas as pd
 import os
 import numpy as np
 import csv
+from pathlib import Path
+
 
 # ============================================================
 # CONFIGURACIÓN DEL USUARIO
 # ============================================================
 
+# Raíz del repositorio
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Ejemplo y tipo de generación que se desea procesar
+GENTIP = "IND" # Si es Inductivo "IND", si es capacitivo "CAP"
+EXAMPLE = "IEEE39"
+
 # Archivo Excel con los escenarios seleccionados
-SCENARIOS_FILE = r"...\data\scenarios\IEEE39\escenarios.xlsx"
+SCENARIOS_FILE = (REPO_ROOT / "data" / "scenarios" / EXAMPLE / "escenarios.xlsx")
 
 # Carpeta donde se guardarán los resultados de extracción
-OUTPUT_FOLDER = r"...\data\results\IEEE39"
+OUTPUT_FOLDER = (REPO_ROOT / "data" / "results" / EXAMPLE / GENTIP)
 
 # === CONFIGURACIÓN ===
 excel_path = SCENARIOS_FILE

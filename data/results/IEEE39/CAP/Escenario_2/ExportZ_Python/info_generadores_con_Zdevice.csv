@@ -1,0 +1,11 @@
+Nombre;Tipo;TipoFisico;TipoControl;Nodo Conectado;pgini [MW];V_base [kV];Zdevice [Ohm aprox.]
+PV1;ElmPvsys;IBR;av_mode=constq;PV1 LV;676.3001;0.48;0.0003
+PV2;ElmPvsys;IBR;av_mode=constq;PV2 LV;380.0000;0.48;0.0006
+G 01;ElmSym;Síncrono;Vtheta;Bus 39;1000.0000;345.00;119.0250
+G 02;ElmSym;Síncrono;Vtheta;Bus 31;N/A;16.50;N/A
+G 03;ElmSym;Síncrono;Vtheta;Bus 32;650.0000;16.50;0.4188
+G 04;ElmSym;Síncrono;Vtheta;Bus 33;632.0000;16.50;0.4308
+G 05;ElmSym;Síncrono;Vtheta;Bus 34;254.0000;16.50;1.0719
+G 06;ElmSym;Síncrono;Vtheta;Bus 35;650.0000;16.50;0.4188
+G 07;ElmSym;Síncrono;Vtheta;Bus 36;560.0000;16.50;0.4862
+G 10;ElmSym;Síncrono;Vtheta;Bus 30;250.0000;16.50;1.0890
