@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXAMPLE = "IEEE39"
 
 #Tipo de genración
-GENTIP = "CAP" # Si es Inductivo "IND", si es capacitivo "CAP"
+GENTIP = "IND" # Si es Inductivo "IND", si es capacitivo "CAP"
 
 # Carpeta donde se guardarán los resultados de los indicadores
 # ------------------------------------------------------------
