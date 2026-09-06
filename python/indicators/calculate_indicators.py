@@ -1,4 +1,3 @@
-# PROCESAMIENTO_COMPLETO_ESCENARIOS.py
 import inspect
 import re
 import os
@@ -15,39 +14,34 @@ VarTen=(230/0.48)**2
 VbL = 230
 SbL = 100
 
-
-# ============================================================
-# CONFIGURACIÓN DE RUTAS DEL REPOSITORIO
-# ============================================================
-
-# Raíz del repositorio
+# Repository root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Ejemplo que se desea procesar
+# Example to be processed
 EXAMPLE = "IEEE39"
 
-#Tipo de genración
-GENTIP = "CAP" # Si es Inductivo "IND", si es capacitivo "CAP"
+#Generation type
+GENTIP = "CAP" # If inductive "IND", if capacitive "CAP"
 
 # ------------------------------------------------------------
-# ENTRADA:
-# Carpeta donde extract_scenario_data.py guardó los escenarios
+# INPUT:
+# Folder where extract_scenario_data.py saved the scenarios
 # ------------------------------------------------------------
 INPUT_PATH = REPO_ROOT / "data" / "results" / EXAMPLE / GENTIP
 
 # ------------------------------------------------------------
-# SALIDA:
-# Carpeta donde se guardarán los resultados de los indicadores
+# OUTPUT:
+# Folder where the indicator results will be saved
 # ------------------------------------------------------------
 OUTPUT_PATH = REPO_ROOT / "results" / EXAMPLE / GENTIP
 
-# Crear la carpeta de salida si no existe
+# Create the output folder if it does not exist
 OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
-print(f"📥 Entrada: {INPUT_PATH}")
-print(f"📤 Salida:  {OUTPUT_PATH}")
+print(f"📥 Input: {INPUT_PATH}")
+print(f"📤 Output:  {OUTPUT_PATH}")
 
-# Parámetros técnicos GSIM (constantes para todos los escenarios)
+# GSIM technical parameters (constant for all scenarios)
 FN = 50.0
 WB = 2 * pi * FN
 V_LV = 480.0
@@ -57,11 +51,11 @@ X_R_CONV = 10.0
 EPS = 1e-12
 
 # =============================================================================
-# BLOQUE 2: FUNCIONES COMPARTIDAS
+# BLOCK 2: SHARED FUNCTIONS
 # =============================================================================
 
 def encontrar_escenarios(ruta_base):
-    """Encuentra todas las carpetas de escenarios"""
+    """Find all the scenario folders"""
     escenarios = []
     for item in os.listdir(ruta_base):
         item_path = os.path.join(ruta_base, item)
@@ -70,7 +64,7 @@ def encontrar_escenarios(ruta_base):
     return escenarios
 
 # =============================================================================
-# BLOQUE 3: FUNCIONES PARA CÁLCULO DE ZBUS
+# BLOCK 3: FUNCTIONS FOR ZBUS CALCULATION
 # =============================================================================
 
 def parse_complex(x):
@@ -78,21 +72,21 @@ def parse_complex(x):
         return complex(x)
     s = x.strip()
 
-    # Caso "a+j-b" -> "a-bj"
+    # Case "a+j-b" -> "a-bj"
     s = s.replace("+j-", "-")
-    # Caso "a+j b" -> "a+bj"
+    # Case "a+j b" -> "a+bj"
     s = s.replace("+j", "+")
-    # Caso "a-j b" -> "a-bj"
+    # Case "a-j b" -> "a-bj"
     s = s.replace("-j", "-")
 
-    # Si no termina en "j", añadirla
+    # If it does not end with "j", append it
     if re.match(r".*[+-]\d+(\.\d+)?$", s):
         s = s + "j"
 
     try:
         return complex(s)
     except ValueError:
-        print(f"❌ No se pudo parsear: '{x}' -> '{s}'")
+        print(f"❌ Could not be parsed: '{x}' -> '{s}'")
         return complex(0)
 
 def parse_complex_simple(x):
@@ -101,7 +95,7 @@ def parse_complex_simple(x):
     
     s = x.strip()
     
-    # Convertir formato "a+j-b" a formato estándar
+    # Convert "a+j-b" format to standard format
     if "+j-" in s:
         s = s.replace("+j-", "-") + "j"
     elif "-j-" in s:
@@ -111,23 +105,23 @@ def parse_complex_simple(x):
     elif "-j" in s:
         s = s.replace("-j", "-") + "j"
     
-    # Si ya tiene j al final, dejarla tal cual
+    # If it already has j at the end, leave it as is
     elif not s.endswith('j') and 'j' not in s:
-        # Verificar si parece un número complejo sin j
+        # Check whether it looks like a complex number without j
         if re.match(r'^[+-]?\d*\.?\d+[+-]\d*\.?\d+$', s):
             s = s + 'j'
     
     try:
         return complex(s)
     except ValueError:
-        print(f"❌ No se pudo parsear: '{x}' -> '{s}'")
+        print(f"❌ Could not be parsed: '{x}' -> '{s}'")
         return complex(0)
 
-#print("Ejemplo1:", parse_complex("0.2475+j-7.0731"))
-#print("Ejemplo1:", parse_complex_simple("0.2475+j-7.0731"))
+#print("Example1:", parse_complex("0.2475+j-7.0731"))
+#print("Example1:", parse_complex_simple("0.2475+j-7.0731"))
 
 def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
-    """Calcula Zbus para un escenario específico."""
+    """Calculate Zbus for a specific scenario."""
 
     escenario_input_path = Path(escenario_input_path)
     escenario_output_path = Path(escenario_output_path)
@@ -136,11 +130,11 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
 
     print()
     print("=" * 70)
-    print(f"🔄 CALCULANDO ZBUS: {escenario_nombre}")
+    print(f"🔄 CALCULATING ZBUS: {escenario_nombre}")
     print("=" * 70)
 
     # ---------------------------------------------------------
-    # Rutas
+    # Paths
     # ---------------------------------------------------------
     ybus_file_path = (
         escenario_input_path
@@ -162,17 +156,17 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
     print(f"📤 Zbus:  {zbus_output_path}")
 
     # ---------------------------------------------------------
-    # Verificar archivo Ybus
+    # Verify Ybus file
     # ---------------------------------------------------------
     if not ybus_file_path.exists():
         print(
-            f"❌ No se encontró Ybus_export.csv:\n"
+            f"❌ Not found Ybus_export.csv:\n"
             f"   {ybus_file_path}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Crear carpeta de salida
+    # Create output folder
     # ---------------------------------------------------------
     try:
         positive_output_path.mkdir(
@@ -181,14 +175,14 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
         )
     except Exception as e:
         print(
-            f"❌ No se pudo crear la carpeta de salida:\n"
+            f"❌ The output folder could not be created:\n"
             f"   {positive_output_path}\n"
             f"   Error: {e}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Leer Ybus
+    # Read Ybus
     # ---------------------------------------------------------
     try:
         Y = pd.read_csv(
@@ -197,29 +191,29 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
         )
 
         print(
-            f"📐 Dimensiones Ybus: "
+            f"📐 Ybus dimensions: "
             f"{Y.shape[0]} x {Y.shape[1]}"
         )
 
     except Exception as e:
         print(
-            f"❌ Error leyendo Ybus:\n"
+            f"❌ Error reading Ybus:\n"
             f"   {e}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Verificar que Ybus sea cuadrada
+    # Verify that Ybus is square
     # ---------------------------------------------------------
     if Y.shape[0] != Y.shape[1]:
         print(
-            f"❌ Ybus no es cuadrada: "
+            f"❌ Ybus is not square: "
             f"{Y.shape[0]} x {Y.shape[1]}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Convertir Ybus a números complejos
+    # Convert Ybus to complex numbers
     # ---------------------------------------------------------
     try:
 
@@ -227,40 +221,40 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
             lambda col: col.map(parse_complex_simple)
         ).to_numpy(dtype=complex)
 
-        print("✅ Ybus convertida a matriz compleja.")
+        print("✅ Ybus converted to a complex matrix.")
 
     except Exception as e:
         print(
-            f"❌ Error convirtiendo Ybus a complejos:\n"
+            f"❌ Error converting Ybus to complex numbers:\n"
             f"   {e}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Verificar valores problemáticos
+    # Check for problematic values
     # ---------------------------------------------------------
     if not np.isfinite(Yc.real).all() or not np.isfinite(Yc.imag).all():
-        print("❌ Ybus contiene NaN o valores infinitos.")
+        print("❌ Ybus contains NaN or infinite values.")
         return False
 
     # ---------------------------------------------------------
-    # Calcular Zbus
+    # Calculate Zbus
     # ---------------------------------------------------------
     try:
 
-        print("🧮 Calculando inversa de Ybus...")
+        print("🧮 Calculating the inverse of Ybus...")
 
         condicion = np.linalg.cond(Yc)
 
         print(
-            f"📊 Número de condición de Ybus: "
+            f"📊 Ybus condition number: "
             f"{condicion:.3e}"
         )
 
         if condicion > 1e12:
             print(
-                "⚠️ Ybus está mal condicionada. "
-                "Se utilizará pseudo-inversa."
+                "⚠️ Ybus is ill-conditioned. "
+                "The pseudo-inverse will be used."
             )
 
             Zc = np.linalg.pinv(Yc)
@@ -268,32 +262,32 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
         else:
             Zc = np.linalg.inv(Yc)
 
-        print("✅ Zbus calculada correctamente.")
+        print("✅ Zbus calculated correctly.")
 
     except np.linalg.LinAlgError:
         print(
-            "⚠️ Ybus singular. "
-            "Calculando pseudo-inversa..."
+            "⚠️ Singular Ybus. "
+            "Calculating pseudo-inverse..."
         )
 
         try:
             Zc = np.linalg.pinv(Yc)
         except Exception as e:
             print(
-                f"❌ Error calculando pseudo-inversa:\n"
+                f"❌ Error calculating pseudo-inverse:\n"
                 f"   {e}"
             )
             return False
 
     except Exception as e:
         print(
-            f"❌ Error calculando Zbus:\n"
+            f"❌ Error calculating Zbus:\n"
             f"   {e}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Crear DataFrame Zbus
+    # Create Zbus DataFrame
     # ---------------------------------------------------------
     try:
 
@@ -305,13 +299,13 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
 
     except Exception as e:
         print(
-            f"❌ Error creando DataFrame Zbus:\n"
+            f"❌ Error creating Zbus DataFrame:\n"
             f"   {e}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Guardar Zbus
+    # Save Zbus
     # ---------------------------------------------------------
     try:
 
@@ -320,27 +314,27 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
         )
 
         print(
-            f"💾 Zbus guardada correctamente en:\n"
+            f"💾 Zbus saved correctly in:\n"
             f"   {zbus_output_path}"
         )
 
     except Exception as e:
         print(
-            f"❌ Error guardando Zbus:\n"
+            f"❌ Error saving Zbus:\n"
             f"   {e}"
         )
         return False
 
     # ---------------------------------------------------------
-    # Verificación final
+    # Final verification
     # ---------------------------------------------------------
     if zbus_output_path.exists():
 
         tamaño = zbus_output_path.stat().st_size
 
         print(
-            f"✅ Archivo confirmado.\n"
-            f"   Tamaño: {tamaño:,} bytes"
+            f"✅ File confirmed.\n"
+            f"   Size: {tamaño:,} bytes"
         )
 
         return True
@@ -348,23 +342,23 @@ def calcular_zbus_escenario(escenario_input_path, escenario_output_path):
     else:
 
         print(
-            "❌ El archivo aparentemente se guardó, "
-            "pero no se encontró posteriormente."
+            "❌ The file was apparently saved, "
+            "but it was not found subsequently."
         )
 
         return False
 
 # =============================================================================
-# BLOQUE 4: FUNCIONES PARA CÁLCULO GSIM
+# BLOCK 4: FUNCTIONS FOR GSIM CALCULATION
 # =============================================================================
 
 def Z_dq_from_RL(R, L):
-    """Convierte R y L a matriz de impedancia dq"""
+    """Convert R and L to the dq impedance matrix"""
     Zdq = WB * L
     return np.array([[R + 0j, Zdq], [-Zdq, R + 0j]], dtype=complex)
 
 def Zb_from_power(P_MW, V_LL, X_R, f=50.0):
-    """Calcula impedancia base a partir de potencia y voltaje"""
+    """Calculate base impedance from power and voltage"""
     P = P_MW * 1e6
     if P <= 0:
         P = 1e6
@@ -378,41 +372,41 @@ def Zb_from_power(P_MW, V_LL, X_R, f=50.0):
 
 def Zb_from_power_with_filter_simple(P_MW, V_LL, X_R_conv, f=50.0):
     """
-    Versión simplificada con valores fijos por rango de potencia
+    Simplified version with fixed values ​​by power range
     """
-    # 1. Impedancia base
+    # 1. Base impedance
     R_base, L_base = Zb_from_power(P_MW, V_LL, X_R_conv, f)
     
-    # 2. Determinar filtro según potencia
+    # 2. Determine filter according to power
     if P_MW < 5:
         # 1-5 MW
-        L_filter = 0.10e-5  # 0.10 mH adicional
+        L_filter = 0.10e-5  # 0.10 mH additional
     elif P_MW < 20:
         # 5-20 MW
-        L_filter = 0.05e-5  # 0.05 mH adicional
+        L_filter = 0.05e-5  # 0.05 mH additional
     elif P_MW < 50:
         # 20-50 MW
-        L_filter = 0.03e-5  # 0.03 mH adicional
+        L_filter = 0.03e-5  # 0.03 mH additional
     elif P_MW < 100:
         # 50-100 MW
-        L_filter = 0.02e-5  # 0.02 mH adicional
+        L_filter = 0.02e-5  # 0.02 mH additional
     elif P_MW < 200:
         # 100-200 MW
-        L_filter = 0.015e-5  # 0.015 mH adicional
+        L_filter = 0.015e-5  # 0.015 mH additional
     else:
         # >200 MW
-        L_filter = 0.01e-5  # 0.01 mH adicional
+        L_filter = 0.01e-5  # 0.01 mH additional
     
-    # 3. Sumar inductancia del filtro
+    # 3. Add filter inductance
     L_total = L_base + L_filter
-    #print(f"  Filtro: +{L_filter*1e3:.3f} mH (total L: {L_total*1e3:.3f} mH)")
-    # 4. La resistencia se mantiene igual (el filtro no agrega resistencia significativa a 50Hz)
+    #print(f"  Filter: +{L_filter*1e3:.3f} mH (total L: {L_total*1e3:.3f} mH)")
+    # 4. Resistance remains unchanged (the filter does not add significant resistance at 50 Hz)
     R_total = R_base
     
     return R_total, L_total
 
 def GSIM_from_Y_and_Z(Ysys, Zb):
-    """Calcula el índice GSIM a partir de matrices Y y Z"""
+    """Calculate the GSIM index from matrices Y and Z"""
     eigY = np.abs(np.linalg.eigvals(Ysys))
     eigZ = np.abs(np.linalg.eigvals(Zb))
     eigY_s = np.sort(eigY)[::-1]
@@ -425,11 +419,11 @@ def GSIM_from_Y_and_Z(Ysys, Zb):
     return total, q, d
 
 def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
-    """Procesa cálculo GSIM para un escenario específico"""
+    """Processes the GSIM calculation for a specific scenario"""
     escenario_nombre = os.path.basename(escenario_input_path)
-    print(f"  🔄 Calculando GSIM para {escenario_nombre}...")
+    print(f"  🔄 Calculating GSIM for {escenario_nombre}...")
     
-    # Construir rutas de archivos para este escenario
+    # Build file paths for this scenario
     ruta_positive1 = os.path.join(escenario_input_path, "Positive")
     ruta_positive2 = os.path.join(escenario_output_path, "Positive")
     ruta_datos_gsim = os.path.join(escenario_input_path, "Datos GSIM")
@@ -441,25 +435,25 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
         "transformers": os.path.join(ruta_datos_gsim, "ieee9bus_transformers.csv")
     }
     
-    # Verificar que existan todos los archivos requeridos
+    # Verify that all required files exist
     for nombre, ruta in archivos_requeridos.items():
         if not os.path.exists(ruta):
             print(f"  ❌ No se encuentra {nombre}: {ruta}")
             return False
     
-    print("  ✅ Todos los archivos requeridos para GSIM encontrados")
+    print("  ✅ All required files for GSIM found")
     
     try:
-        # Cargar datos
+        # Load data
         Zbus_df = pd.read_csv(archivos_requeridos["Zbus"])
         cc_df = pd.read_csv(archivos_requeridos["cortocircuito"], sep=';')
         cc_df.columns = cc_df.columns.str.strip().str.replace('\xa0', ' ', regex=True)
         pvs_df = pd.read_csv(archivos_requeridos["pvsys"])
         trafo_df = pd.read_csv(archivos_requeridos["transformers"])
         
-        print(f"  📊 Datos cargados: {len(pvs_df)} PVs, {len(trafo_df)} transformadores")
+        print(f"  📊 Data loaded: {len(pvs_df)} PVs, {len(trafo_df)} transformaers")
         
-        # Procesar cada PV
+        # Process each PV
         results = []
         for i, row in pvs_df.iterrows():
             bus_str = str(row.get("bus", ""))
@@ -471,10 +465,10 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
             except:
                 P_MW = 1.0
 
-            # === CÁLCULO EN LV (LOW VOLTAGE) ===
+            # === CALCULATION AT LV (LOW VOLTAGE) ===
             match_lv = cc_df[cc_df["Nodo"].astype(str).str.contains(bus_str, case=False, regex=False)]
             if match_lv.empty:
-                print(f"  ⚠ No se encontró S_sc LV para bus {bus_str}")
+                print(f"  ⚠ S_sc LV not found for bus {bus_str}")
                 continue
                 
             S_sc_LV = float(str(match_lv.iloc[0]["Potencia Cortocircuito Skss [MVA]"]).replace(',', '.'))
@@ -489,13 +483,13 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
             Zb_lv = Z_dq_from_RL(Rb, Lb)
             GSIM_lv, q_lv, d_lv = GSIM_from_Y_and_Z(Yg_lv, Zb_lv)
 
-            # === CÁLCULO EN HV (HIGH VOLTAGE) ===
+            # === CALCULATION AT HV (HIGH VOLTAGE) ===
             trafo_match = trafo_df[
                 (trafo_df["from_bus"].astype(str).str.contains(bus_str, case=False, regex=False)) |
                 (trafo_df["to_bus"].astype(str).str.contains(bus_str, case=False, regex=False))
             ]
             if trafo_match.empty:
-                print(f"  ⚠ No se encontró transformador para bus {bus_str}")
+                print(f"  ⚠ No transformer found for bus {bus_str}")
                 continue
 
             tr = trafo_match.iloc[0]
@@ -503,13 +497,13 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
 
             match_hv = cc_df[cc_df["Nodo"].astype(str).str.contains(hv_bus, case=False, regex=False)]
             if match_hv.empty:
-                print(f"  ⚠ No se encontró S_sc HV para bus {hv_bus}")
+                print(f"  ⚠ S_sc HV not found for bus {hv_bus}")
                 continue
                 
             S_sc_HV = float(str(match_hv.iloc[0]["Potencia Cortocircuito Skss [MVA]"]).replace(',', '.'))
             SCR_HV = S_sc_HV / P_MW
 
-            # Recalcular completamente en base HV
+            # Recalculate completely based on HV
             Zth_mag_HV = (V_HV**2) / (S_sc_HV * 1e6)
             R_th_HV = Zth_mag_HV / math.sqrt(1 + X_R_SYS**2)
             X_th_HV = X_R_SYS * R_th_HV
@@ -519,7 +513,7 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
             Zb_hv = Zb_lv * (V_HV / V_LV)**2
             GSIM_hv, q_hv, d_hv = GSIM_from_Y_and_Z(Yg_hv, Zb_hv)
 
-            # Guardar resultados
+            # Save results
             results.append({
                 "escenario": escenario_nombre,
                 "bus": bus_str,
@@ -537,30 +531,30 @@ def procesar_gsim_escenario(escenario_input_path, escenario_output_path):
                 "transformador": tr["name"]
             })
 
-        # Guardar resultados GSIM
+        # Save GSIM results
         if results:
             out_df = pd.DataFrame(results)
             output_path = os.path.join(escenario_output_path, "GSIM_results.csv")
             out_df.to_csv(output_path, index=False)
-            print(f"  ✅ GSIM calculado: {len(results)} PVs procesados")
-            print(f"  💾 Resultados guardados en: {output_path}")
+            print(f"  ✅ Calculated GSIM: {len(results)} Processed PVs")
+            print(f"  💾 Results saved in: {output_path}")
             return True
         else:
-            print("  ❌ No se generaron resultados GSIM para este escenario")
+            print("  ❌ No GSIM results were generated for this scenario")
             return False
             
     except Exception as e:
-        print(f"  ❌ Error calculando GSIM para {escenario_nombre}: {str(e)}")
+        print(f"  ❌ Error calculating GSIM for {escenario_nombre}: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
 
 # =============================================================================
-# BLOQUE 5: FUNCIONES PARA CÁLCULO NRSCR
+# BLOCK 5: FUNCTIONS FOR NRSCR CALCULATION
 # =============================================================================
 
 def safe_complex(val):
-    """Función robusta para convertir strings complejos a números complejos reales"""
+    """Robust function for converting complex strings into actual complex numbers"""
     try:
         val = str(val).replace(" ", "").replace("i", "j")
         match = re.match(r"([-+]?[0-9.]+)?\+?j([-+]?[0-9.]+)", val)
@@ -574,7 +568,7 @@ def safe_complex(val):
         return np.nan
 
 def split_Ybus(Ybus, sync_nodes, ibr_nodes):
-    """Divide la matriz Ybus en submatrices"""
+    """Divide the Ybus matrix into submatrices"""
     Ygg = Ybus[np.ix_(sync_nodes, sync_nodes)]
     Ygl = Ybus[np.ix_(sync_nodes, ibr_nodes)]
     Ylg = Ybus[np.ix_(ibr_nodes, sync_nodes)]
@@ -582,11 +576,11 @@ def split_Ybus(Ybus, sync_nodes, ibr_nodes):
     return Ygg, Ygl, Ylg, Yll
 
 def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
-    """Calcula NRSCR para un escenario específico"""
+    """Calculate NRSCR for a specific scenario"""
     escenario_nombre = os.path.basename(escenario_input_path)
-    print(f"  🔄 Calculando NRSCR para {escenario_nombre}...")
+    print(f"  🔄 Calculating NRSCR for {escenario_nombre}...")
     
-    # Construir rutas de archivos para este escenario
+    # Build file paths for this scenario
     ruta_positive = os.path.join(escenario_input_path, "Positive")
     ruta_sdscr_info = os.path.join(escenario_input_path, "SDSCR INFO")
     
@@ -597,29 +591,29 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
         "transformers": os.path.join(ruta_sdscr_info, "transformers.csv")
     }
     
-    # Verificar que existan todos los archivos requeridos
+    # Verify that all required files exist
     for nombre, ruta in archivos_requeridos.items():
         if not os.path.exists(ruta):
-            print(f"  ❌ No se encuentra {nombre}: {ruta}")
+            print(f"  ❌ Not found {nombre}: {ruta}")
             return False
     
-    print("  ✅ Todos los archivos requeridos para NRSCR encontrados")
+    print("  ✅ All required files for NRSCR found")
     
     try:
-        # ========== 1. LECTURA Y CONFIGURACIÓN INICIAL ==========
+        # ========== 1. INITIAL READING AND CONFIGURATION ==========
         df = pd.read_csv(archivos_requeridos["Ybus"], index_col=0)
         
-        # Aplicar conversión a complejos
+        # Apply complex-number conversion
         Ybus = df.map(safe_complex).values
 
-        # Crear mapeo de nombres de bus a índices
+        # Create mapping from bus names to indices
         bus_names = df.index.tolist()
         bus_to_index = {name: idx for idx, name in enumerate(bus_names)}
         index_to_bus = {idx: name for name, idx in bus_to_index.items()}
 
-        print(f"  📊 Mapeo de buses: {len(bus_to_index)} buses")
+        print(f"  📊 Bus mapping: {len(bus_to_index)} bus")
 
-        # ========== 2. IDENTIFICACIÓN DE NODOS ==========
+        # ========== 2. NODE IDENTIFICATION ==========
         transformers_df = pd.read_csv(archivos_requeridos["transformers"])
         pot_df = pd.read_csv(archivos_requeridos["potencias"], sep=";")
         pot_df.columns = pot_df.columns.str.strip()
@@ -628,21 +622,21 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
         col_tipo = "Tipo"
         col_potencia = "Potencia Activa pgini [MW]"
 
-        # Limpiar valores de nodo y potencia
+        # Clean node and power values
         pot_df[col_nodo] = pot_df[col_nodo].str.strip()
 
-        # Identificar nodos síncronos
+        # Identify synchronous nodes
         sync_nodes_names = pot_df[pot_df[col_tipo] == "ElmSym"][col_nodo].tolist()
         sync_nodes = [bus_to_index[name] for name in sync_nodes_names if name in bus_to_index]
 
-        # Identificar nodos IBR (lado de baja de transformadores)
+        # Identify IBR nodes (transformer low-voltage side)
         ibr_nodes_names = pot_df[pot_df[col_tipo].isin(["ElmGenstat", "ElmPvsys"])][col_nodo].tolist()
         ibr_nodes = [bus_to_index[name] for name in ibr_nodes_names if name in bus_to_index]
 
-        print(f"  🔌 Nodos síncronos: {len(sync_nodes)}")
-        print(f"  🔌 Nodos IBR (baja): {len(ibr_nodes)}")
+        print(f"  🔌 Synchronous nodes: {len(sync_nodes)}")
+        print(f"  🔌 IBR Nodes (low): {len(ibr_nodes)}")
 
-        # Identificar nodos de alta de transformadores IBR
+        # Identify HV nodes of IBR transformers
         high_voltage_nodes = []
         ibr_to_hv_map = {}
 
@@ -658,9 +652,9 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
                     high_voltage_nodes.append(hv_index)
                     ibr_to_hv_map[lv_index] = hv_index
 
-        print(f"  🔌 Nodos de alta de transformadores IBR: {len(high_voltage_nodes)}")
+        print(f"  🔌 IBR transformer energization nodes: {len(high_voltage_nodes)}")
 
-        # ========== 3. CÁLCULO DE NRSCR ==========
+        # ========== 3. NRSCR CALCULATION ==========
         def calcular_nrscr_en_alta(Ybus, pot_df, corto_df, sync_nodes, ibr_nodes, ibr_to_hv_map, 
                                   col_nodo="Nodo Conectado", col_tipo="Tipo", 
                                   col_potencia="Potencia Activa pgini [MW]",
@@ -675,11 +669,11 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
                     
                 nodo_alta = ibr_to_hv_map[nodo_ibr]
                 
-                # Crear nuevas listas con nodo de alta como síncrono
+                # Create new lists with the HV node as synchronous
                 sync_mod = sync_nodes + [nodo_alta]
                 ibr_mod = [n for n in ibr_nodes if n != nodo_ibr]
 
-                # Recalcular submatrices
+                # Recalculate submatrices
                 Ygg, Ygl, Ylg, Yll = split_Ybus(Ybus, sync_mod, ibr_mod)
 
                 if Yll.shape[0] == 0:
@@ -691,13 +685,13 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
                     continue
 
                 try:
-                    # Calcular Flg
+                    # Calculate Flg
                     Flg = np.linalg.inv(-Yll) @ Ylg
                 except np.linalg.LinAlgError:
-                    print(f"  ⚠ Nodo {nodo_ibr}: Yll no invertible. Saltando.")
+                    print(f"  ⚠ Node {nodo_ibr}: Yll non-invertible. Skipping.")
                     continue
 
-                # Obtener potencias activas de nodos síncronos modificados
+                # Get active powers of modified synchronous nodes
                 pot_sync_mod = []
                 for n in sync_mod:
                     bus_name = index_to_bus[n]
@@ -708,39 +702,39 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
                     else:
                         pot_sync_mod.append(0.0)
 
-                # Calcular matriz Pdg
+                # Calculate Pdg matrix
                 Pdg = Flg * np.array(pot_sync_mod)[np.newaxis, :]
 
-                # Índice de la columna asociada al nodo de alta
+                # Index of the column associated with the HV node
                 col_idx = len(sync_mod) - 1
 
-                # Potencia activa del nodo IBR (lado de baja)
+                # Active power of the IBR node (low-voltage side)
                 bus_name_ibr = index_to_bus[nodo_ibr]
                 P_dg_i = pot_df.loc[pot_df[col_nodo] == bus_name_ibr, col_potencia]
                 if P_dg_i.empty:
-                    print(f"  ⚠ No se encontró potencia para nodo IBR {bus_name_ibr}")
+                    print(f"  ⚠ No power found for IBR node {bus_name_ibr}")
                     continue
                     
                 P_dg_i = float(str(P_dg_i.values[0]).replace(",", "."))
 
-                # Suma de contribuciones (sin la autocontribución)
+                # Sum of contributions (excluding self-contribution)
                 columna_contrib = np.abs(Pdg[:, col_idx])
                 suma_contrib = np.sum(columna_contrib)
 
-                # Buscar potencia de cortocircuito en el nodo de alta
+                # Find short-circuit power at the HV node
                 bus_name_alta = index_to_bus[nodo_alta]
                 corto_df.columns = corto_df.columns.str.strip()
                 fila_scc = corto_df[corto_df[col_nodo_corto] == bus_name_alta]
                 if fila_scc.empty:
-                    print(f"  ⚠ No se encontró SCC para nodo de alta {bus_name_alta}")
+                    print(f"  ⚠ No SCC found for high node {bus_name_alta}")
                     continue
 
                 S_scc_i = float(str(fila_scc[col_scc].values[0]).replace(",", "."))
 
-                # Calcular NRSCR
+                # Calculate NRSCR
                 NRSCR_i = S_scc_i / (P_dg_i + suma_contrib)
                 
-                # También calcular SCR tradicional para comparación
+                # Also calculate traditional SCR for comparison
                 SCR_i = S_scc_i / P_dg_i
 
                 resultados.append({
@@ -757,15 +751,15 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
 
             return resultados
 
-        # ========== 4. EJECUCIÓN Y RESULTADOS ==========
+        # ========== 4. EXECUTION AND RESULTS ==========
         corto_df = pd.read_csv(archivos_requeridos["cortocircuito"], sep=";")
         corto_df.columns = corto_df.columns.str.strip()
 
-        # Calcular NRSCR en lado de alta
+        # Calculate NRSCR on the HV side
         resultados = calcular_nrscr_en_alta(Ybus, pot_df, corto_df, sync_nodes, ibr_nodes, ibr_to_hv_map)
 
-        # Mostrar resultados
-        print(f"\n  📊 RESULTADOS NRSCR - {escenario_nombre}")
+        # Display results
+        print(f"\n  📊 NRSCR Results - {escenario_nombre}")
         print(f"  {'Nodo IBR':<12} {'Nodo Alta':<12} {'P [MW]':<8} {'SCC [MVA]':<10} {'Contrib.':<10} {'NRSCR':<8} {'SCR':<8}")
         print(f"  {'-'*70}")
 
@@ -775,9 +769,9 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
                   f"{res['contribuciones']:<10.2f} {res['nrscr']:<8.2f} "
                   f"{res['scr']:<8.2f}")
 
-        # ========== 5. GUARDAR RESULTADOS ==========
+        # ========== 5. SAVE RESULTS ==========
         if resultados:
-            # Crear DataFrame ordenado y completo
+            # Create ordered and complete DataFrame
             data = []
             for res in resultados:
                 diferencia = res['scr'] - res['nrscr']
@@ -794,47 +788,47 @@ def procesar_nrscr_escenario(escenario_input_path, escenario_output_path):
 
             out_df = pd.DataFrame(data, columns=["Nodo IBR", "Nodo Alta", "P [MW]", "SCC [MVA]", "Contrib.", "NRSCR", "SCR", "Diferencia"])
 
-            # Guardar en CSV
+            # Save to CSV
             output_path = os.path.join(escenario_output_path, "NRSCR_results.csv")
             out_df.to_csv(output_path, index=False, encoding="utf-8-sig")
 
-            # Análisis estadístico
+            # Statistical analysis
             if resultados:
                 nrscr_values = [res['nrscr'] for res in resultados]
                 scr_values = [res['scr'] for res in resultados]
                 
-                print(f"\n  📈 ANÁLISIS ESTADÍSTICO:")
-                print(f"     NRSCR promedio: {np.mean(nrscr_values):.2f}")
-                print(f"     SCR promedio: {np.mean(scr_values):.2f}")
-                print(f"     Reducción porcentual: {(1 - np.mean(nrscr_values)/np.mean(scr_values))*100:.1f}%")
+                print(f"\n  📈 STATISTICAL ANALYSIS:")
+                print(f"     Average NRSCR: {np.mean(nrscr_values):.2f}")
+                print(f"     Average SCR: {np.mean(scr_values):.2f}")
+                print(f"     Percentage reduction: {(1 - np.mean(nrscr_values)/np.mean(scr_values))*100:.1f}%")
                 
-                # Clasificación por fuerza de red
+                # Grid strength classification
                 fuerte = sum(1 for x in nrscr_values if x >= 3.0)
                 debil = sum(1 for x in nrscr_values if 1.5 <= x < 3.0)
                 muy_debil = sum(1 for x in nrscr_values if x < 1.5)
                 
-                print(f"     🔋 Sistema fuerte (NRSCR ≥ 3.0): {fuerte} nodos")
-                print(f"     ⚠️  Sistema débil (1.5 ≤ NRSCR < 3.0): {debil} nodos")
-                print(f"     ❌ Sistema muy débil (NRSCR < 1.5): {muy_debil} nodos")
+                print(f"     🔋 Strong system (NRSCR ≥ 3.0): {fuerte} nodes")
+                print(f"     ⚠️  Weak system (1.5 ≤ NRSCR < 3.0): {debil} nodes")
+                print(f"     ❌ Very weak system (NRSCR < 1.5): {muy_debil} nodes")
 
-            print(f"  💾 Resultados NRSCR guardados en: {output_path}")
+            print(f"  💾 NRSCR results saved in: {output_path}")
             return True
         else:
-            print("  ❌ No se generaron resultados NRSCR para este escenario")
+            print("  ❌ No NRSCR results were generated for this scenario")
             return False
             
     except Exception as e:
-        print(f"  ❌ Error calculando NRSCR para {escenario_nombre}: {str(e)}")
+        print(f"  ❌ Error calculating NRSCR for {escenario_nombre}: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
 
 # =============================================================================
-# BLOQUE 6: FUNCIONES PARA CÁLCULO LSCR
+# BLOCK 6: FUNCTIONS FOR LSCR CALCULATION
 # =============================================================================
 
 def parse_complex_safe(val):
-    """Función robusta para convertir strings complejos a números complejos"""
+    """Robust function for converting complex strings to complex numbers"""
     if isinstance(val, str):
         val = val.replace(" ", "")
         match = re.match(r"([-+]?[0-9]*\.?[0-9]+)\+j([-+]?[0-9]*\.?[0-9]+)", val)
@@ -846,11 +840,11 @@ def parse_complex_safe(val):
     return val
 
 def procesar_lscr_escenario(escenario_input_path, escenario_output_path):
-    """Calcula LSCR para un escenario específico"""
+    """Calculate the LSCR for a specific scenario"""
     escenario_nombre = os.path.basename(escenario_input_path)
-    print(f"  🔄 Calculando LSCR para {escenario_nombre}...")
+    print(f"  🔄 Calculating LSCR for {escenario_nombre}...")
     
-    # Construir rutas de archivos para este escenario
+    # Build file paths for this scenario
     ruta_positive = os.path.join(escenario_input_path, "Positive")
     ruta_sdscr_info = os.path.join(escenario_input_path, "SDSCR INFO")
     ruta_ZPython_info = os.path.join(escenario_input_path, "ExportZ_Python")
@@ -862,16 +856,16 @@ def procesar_lscr_escenario(escenario_input_path, escenario_output_path):
         "transformers": os.path.join(ruta_sdscr_info, "transformers.csv")
     }
     
-    # Verificar que existan todos los archivos requeridos
+    # Verify that all required files exist
     for nombre, ruta in archivos_requeridos.items():
         if not os.path.exists(ruta):
-            print(f"  ❌ No se encuentra {nombre}: {ruta}")
+            print(f"  ❌ Not found {nombre}: {ruta}")
             return False
     
-    print("  ✅ Todos los archivos requeridos para LSCR encontrados")
+    print("  ✅ All required files for LSCR found")
     
     try:
-        # ========== 1. LECTURA Y CONFIGURACIÓN INICIAL ==========
+        # ========== 1. INITIAL READING AND CONFIGURATION ==========
         ybus_df = pd.read_csv(archivos_requeridos["Ybus"])
         if 'Bus' in ybus_df.columns:
             ybus_df.set_index('Bus', inplace=True)
@@ -883,66 +877,66 @@ def procesar_lscr_escenario(escenario_input_path, escenario_output_path):
         load_df = pd.read_csv(archivos_requeridos["cargas"], delimiter=";")
         transformers_df = pd.read_csv(archivos_requeridos["transformers"])
 
-        # --- Crear mapeo de transformadores IBR (lado de baja -> lado de alta) ---
+        # --- Create IBR transformer mapping (low-voltage side -> high-voltage side) ---
         ibr_transformer_map = {}
         for _, transformer in transformers_df.iterrows():
             name = transformer['name'].strip()
             hv_node = transformer['hv_node'].strip()
             lv_node = transformer['lv_node'].strip()
             
-            # Buscar transformadores que conectan IBRs (basado en nombres de nodos LV)
+            # Find transformers connecting IBRs (based on LV node names)
             if 'PV' in lv_node or 'LV' in lv_node:
                 ibr_transformer_map[lv_node] = hv_node
-                print(f"  🔌 Transformador encontrado: {name} - {lv_node} -> {hv_node}")
+                print(f"  🔌 Transformer found: {name} - {lv_node} -> {hv_node}")
 
-        # --- Clasificación avanzada de generadores ---
+        # --- Advanced generator classification ---
         gen_df['Tipo'] = gen_df['Tipo'].str.strip()
         gen_df['TipoControl'] = gen_df['TipoControl'].str.strip()
 
-        # Identificar barras slack (Vθ)
+        # Identify slack buses (Vθ)
         slack_buses = gen_df[(gen_df['Tipo'] == "ElmSym") & 
                             (gen_df['TipoControl'] == "Vtheta")]['Nodo Conectado'].str.strip().tolist()
 
-        # Identificar barras PV (síncronas)
+        # Identify PV buses (synchronous)
         pv_sync_buses = gen_df[(gen_df['Tipo'] == "ElmSym") & 
                               (gen_df['TipoControl'] == "PV")]['Nodo Conectado'].str.strip().tolist()
 
-        # Identificar IBRs (PVsys)
+        # Identify IBRs (PVsys)
         ibr_buses = gen_df[gen_df['Tipo'] == "ElmPvsys"]['Nodo Conectado'].str.strip().tolist()
 
-        # --- Mapeo de índices ---
+        # --- Index mapping ---
         bus_to_index = {bus.strip(): i for i, bus in enumerate(buses)}
 
-        # --- Función para calcular Zth en una barra ---
+        # --- Function to calculate Zth at a bus ---
         def calculate_zth(bus_name, state='normal'):
             """
-            Calcula la impedancia de Thevenin para una barra específica
-            state: 'normal' o 'fault'
+            Calculate the Thevenin impedance for a specific bus
+            state: 'normal' or 'fault'
             """
             bus_idx = bus_to_index[bus_name]
             
-            # Crear matriz Ybus reducida
-            # Para estado normal, las IBRs se modelan como fuentes de voltaje (cortocircuito)
-            # Para estado de falla, las IBRs se modelan como fuentes de corriente (circuito abierto)
+            # Create reduced Ybus matrix
+            # For normal state, IBRs are modeled as voltage sources (short circuit)
+            # For fault state, IBRs are modeled as current sources (open circuit)
             
-            # Identificar nodos a mantener
+            # Identify nodes to retain
             keep_nodes = []
             for i, bus in enumerate(buses):
                 bus = bus.strip()
                 if bus == bus_name:
-                    continue  # Eliminar la barra de interés
+                    continue  # Remove the bus of interest
                     
                 if bus in ibr_buses:
                     if state == 'normal':
-                        # En estado normal, IBRs son fuentes de voltaje (eliminar de Ybus)
+                        # In normal state, IBRs are voltage sources (remove from Ybus)
                         continue
-                    # En falla, IBRs son fuentes de corriente (mantener en Ybus)
+                    # In fault state, IBRs are current sources (keep in Ybus)
                 
                 keep_nodes.append(i)
             
             Yred = Ybus_complex[np.ix_(keep_nodes, keep_nodes)]
             
-            # Calcular Zth como la impedancia equivalente vista desde la barra
+            # Calculate Zth as the equivalent impedance seen from the bus
             try:
                 Yth = Ybus_complex[bus_idx, bus_idx] - (
                     Ybus_complex[bus_idx, keep_nodes] @ 
@@ -953,21 +947,21 @@ def procesar_lscr_escenario(escenario_input_path, escenario_output_path):
             except:
                 return np.inf
 
-        # --- Función para calcular K_vtg ---
+        # --- Function to calculate K_vtg ---
         def calculate_kvtg(bus_name, z_device, state='normal'):
             zth = calculate_zth(bus_name, state)
             if zth == np.inf:
                 return 0
             return abs(z_device / (zth + z_device))
 
-        # --- Función para calcular λSCR ---
+        # --- Function to calculate λSCR ---
         def calculate_lambda_scr(bus_name, z_device, state='normal'):
             zth = calculate_zth(bus_name, state)
             if zth == np.inf:
                 return 0
             return abs(z_device / zth)
 
-        # ========== 2. CÁLCULOS PRINCIPALES ==========
+        # ========== 2. MAIN CALCULATIONS ==========
         results = []
         for _, gen in gen_df.iterrows():
             bus_name = gen['Nodo Conectado'].strip()
@@ -977,19 +971,19 @@ def procesar_lscr_escenario(escenario_input_path, escenario_output_path):
             z_device = float(str(gen['Zdevice [Ohm aprox.]']).replace(",", "."))*VarTen*Xfil
             z_devicepu = z_device/((VbL**2)/SbL)
             
-            # Determinar la barra donde se calcula la fuerza de red
+            # Determine the bus where grid strength is calculated
             calculation_bus = bus_name
             
-            # Para IBRs, usar el lado de alta del transformador si está disponible
+            # For IBRs, use the high-voltage side of the transformer if available
             if gen['Tipo'] == 'ElmPvsys' and bus_name in ibr_transformer_map:
                 calculation_bus = ibr_transformer_map[bus_name]
-                print(f"  🔌 IBR {gen['Nombre']} calculando en lado de alta: {bus_name} -> {calculation_bus}")
+                print(f"  🔌 IBR {gen['Nombre']} calculating on the high-voltage side: {bus_name} -> {calculation_bus}")
             
-            # Calcular para estado normal
+            # Calculate for normal state
             k_vtg_normal = calculate_kvtg(calculation_bus, z_devicepu, 'normal')
             lambda_scr_normal = calculate_lambda_scr(calculation_bus, z_devicepu, 'normal')
             
-            # Calcular para estado de falla
+            # Calculate for fault state
             k_vtg_fault = calculate_kvtg(calculation_bus, z_devicepu, 'fault')
             lambda_scr_fault = calculate_lambda_scr(calculation_bus, z_devicepu, 'fault')
             
@@ -1006,42 +1000,42 @@ def procesar_lscr_escenario(escenario_input_path, escenario_output_path):
                 'λSCR_fault': lambda_scr_fault
             })
 
-        # ========== 3. MOSTRAR Y GUARDAR RESULTADOS ==========
+        # ========== 3. DISPLAY AND SAVE RESULTS ==========
         results_df = pd.DataFrame(results)
-        print(f"\n  📊 RESULTADOS LSCR - {escenario_nombre}")
+        print(f"\n  📊 LSCR RESULTS - {escenario_nombre}")
         print(f"  {'='*80}")
         print(results_df.to_string(index=False))
 
-        # --- Análisis de sistema completo ---
-        print(f"\n  📈 ANÁLISIS DEL SISTEMA COMPLETO")
+        # --- Complete system analysis ---
+        print(f"\n  📈 Analysis of the complete system")
         print(f"  {'='*60}")
-        print(f"    Barras slack (Vθ): {slack_buses}")
-        print(f"    Barras PV síncronas: {pv_sync_buses}")
-        print(f"    Barras IBR (PVsys): {ibr_buses}")
+        print(f"    Slack bars (Vθ): {slack_buses}")
+        print(f"    Synchronous PV busbars: {pv_sync_buses}")
+        print(f"    IBR Bars (PVsys): {ibr_buses}")
 
-        # Calcular relación generación síncrona vs no-síncrona
+        # Calculate synchronous vs. non-synchronous generation ratio
         total_sync = gen_df[gen_df['Tipo'] == 'ElmSym']['pgini [MW]'].sum()
         total_ibr = gen_df[gen_df['Tipo'] == 'ElmPvsys']['pgini [MW]'].sum()
         if total_ibr > 0:
-            print(f"    Relación generación síncrona/no-síncrona: {total_sync/total_ibr:.2f}")
+            print(f"    Synchronous/non-synchronous generation ratio: {total_sync/total_ibr:.2f}")
         else:
-            print(f"    No hay generación no-síncrona (IBR)")
+            print(f"    There is no non-synchronous generation (IBR)")
 
-        # Guardar en CSV
+        # Save to CSV
         output_path = os.path.join(escenario_output_path, "LSCR_results.csv")
         results_df.to_csv(output_path, index=False, encoding="utf-8-sig")
 
-        print(f"\n  💾 Resultados LSCR guardados en: {output_path}")
+        print(f"\n  💾 LSCR results saved in: {output_path}")
         return True
         
     except Exception as e:
-        print(f"  ❌ Error calculando LSCR para {escenario_nombre}: {str(e)}")
+        print(f"  ❌ Error calculating LSCR for {escenario_nombre}: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
 
 # =============================================================================
-# BLOQUE 7: FUNCIONES PARA CÁLCULO SDSCR
+# BLOCK 7: FUNCTIONS FOR SDSCR CALCULATION
 # =============================================================================
 
 import pandas as pd
@@ -1049,17 +1043,17 @@ import numpy as np
 from scipy.sparse import csr_matrix
 import re
 
-# ==================== FUNCIONES AUXILIARES ====================
+# ==================== AUXILIARY FUNCTIONS ====================
 
 def parse_complex(x):
-    """Convierte texto tipo 'a+bj' o 'a+j b' en número complejo."""
+    """Converts text in the format 'a+bj' or 'a+j b' into a complex number."""
     if not isinstance(x, str):
         return complex(x)
     s = x.strip().lower().replace(' ', '')
     s = s.replace('+-', '-')
     s = s.replace('++', '+')
     s = s.replace('j', 'j')
-    s = s.replace('–', '-')  # guion largo
+    s = s.replace('–', '-')  # em dash
     try:
         if 'j' not in s:
             if '+' in s or '-' in s[1:]:
@@ -1068,15 +1062,15 @@ def parse_complex(x):
                 s = s + '+0j'
         return complex(s)
     except Exception:
-        #print(f"❌ No se pudo parsear: {x}")
+        #print(f"❌ Could not parse: {x}")
         return complex(0)
 
 def norm_name(name):
-    """Normaliza nombres de nodos (quita espacios, mayúsculas, etc.)."""
+    """Normalizes node names (removes spaces, uppercase letters, etc.)."""
     return str(name).strip().upper()
 
 
-# ==================== CLASE PRINCIPAL ====================
+# ==================== MAIN CLASS ====================
 
 class SDSCRAnalyzer:
     def __init__(self, data_folder):
@@ -1094,7 +1088,7 @@ class SDSCRAnalyzer:
         self.bus_indices = {name: idx for idx, name in enumerate(self.bus_names)}
         self._verify_base_and_data()
 
-    # -------------------- CARGA DE DATOS --------------------
+    # -------------------- DATA LOADING --------------------
 
     def _load_short_circuit_data(self):
         try:
@@ -1127,10 +1121,10 @@ class SDSCRAnalyzer:
             n = len(self.buses)
             return csr_matrix(np.eye(n, dtype=complex)), csr_matrix(np.eye(n, dtype=complex))
 
-    # -------------------- VALIDACIÓN --------------------
+    # -------------------- VALIDATION --------------------
 
     def _verify_base_and_data(self):
-        """Verifica la consistencia de Zbus con datos de corto."""
+        """Verify the consistency of Zbus with short-circuit data."""
         Zbus_dense = self.Zbus.toarray()
         scc_calc = []
         for i, bus in enumerate(self.bus_names):
@@ -1164,7 +1158,7 @@ class SDSCRAnalyzer:
                 print(f"{bus:6s}: Calc = {S_calc:10.1f} MVA, Real = {S_real:10.1f} MVA, Error = {err:6.1f}%")
         print("=" * 100)
 
-    # -------------------- FUNCIONES DE CÁLCULO --------------------
+    # -------------------- CALCULATION FUNCTIONS --------------------
 
     def get_scc(self, bus_name):
         bus = norm_name(bus_name)
@@ -1178,7 +1172,7 @@ class SDSCRAnalyzer:
         return (V ** 2 / abs(Zii)) * self.base_mva
 
     def calculate_scr(self, bus_name):
-        """SCR clásico."""
+        """SCR clásic."""
         bus = norm_name(bus_name)
         SCC = self.get_scc(bus)
         total_p = 0.0
@@ -1195,7 +1189,7 @@ class SDSCRAnalyzer:
 
     def calculate_sdscr(self, bus_name, debug=False):
         """
-        SDSCR con acoplamiento (versión del paper)
+        SDSCR with coupling (paper version)
         """
         bus = norm_name(bus_name)
         SCC_mva = self.get_scc(bus)
@@ -1206,14 +1200,14 @@ class SDSCRAnalyzer:
         Zii = self.Zbus[idx, idx]
         Vi = self.buses.iloc[idx]['vm_pu']
 
-        # Nodos HV con renovables
+        # HV nodes with renewables
         ren_hv_nodes = []
         for _, tr in self.transformers.iterrows():
             if norm_name(tr['lv_node']) in self.renewables['bus'].apply(norm_name).values:
                 ren_hv_nodes.append(norm_name(tr['hv_node']))
         ren_hv_nodes = list(dict.fromkeys(ren_hv_nodes))
 
-        # Potencias PR
+        # PR powers
         PR = {}
         for hv in ren_hv_nodes:
             p = 0.0
@@ -1249,7 +1243,7 @@ class SDSCRAnalyzer:
 
     def calculate_sdscr_no_coupling(self, bus_name, debug=False):
         """
-        SDSCR sin acoplamiento entre generadores no síncronos.
+        SDSCR without coupling between non-synchronous generators.
         """
         bus = norm_name(bus_name)
         SCC_mva = self.get_scc(bus)
@@ -1278,10 +1272,10 @@ class SDSCRAnalyzer:
         else:
             return "Unstable"
 
-    # -------------------- ANÁLISIS GENERAL --------------------
+    # -------------------- GENERAL ANALYSIS --------------------
 
     def analyze_system_strength(self):
-        """Compara SCR, SDSCR (acoplado) y SDSCR sin acoplamiento"""
+        """Compare SCR, SDSCR (coupled), and uncoupled SDSCR"""
         conn_points = set()
         for _, tr in self.transformers.iterrows():
             if norm_name(tr['lv_node']) in self.renewables['bus'].apply(norm_name).values:
@@ -1320,20 +1314,20 @@ class SDSCRAnalyzer:
         return df
 
 # =============================================================================
-# FUNCIÓN DE PROCESAMIENTO PARA ESCENARIOS
+# SCENARIO PROCESSING FUNCTION
 # =============================================================================
 
 def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
-    """Calcula SDSCR para un escenario específico usando el código original"""
+    """Calculate SDSCR for a specific scenario using the original code"""
     escenario_nombre = os.path.basename(escenario_input_path)
-    print(f"  🔄 Calculando SDSCR para {escenario_nombre}...")
+    print(f"  🔄 Calculating SDSCR for {escenario_nombre}...")
     
-    # Construir rutas de archivos para este escenario
+    # Build file paths for this scenario
     ruta_positive1 = os.path.join(escenario_input_path, "Positive")
     ruta_positive2 = os.path.join(escenario_output_path, "Positive")
-    #print("La ruta Positive SDSCR es:",ruta_positive)
+    #print("The Positive SDSCR path is:",ruta_positive)
     ruta_sdscr_info = os.path.join(escenario_input_path, "SDSCR INFO")
-    #print("La ruta sdscr es:",ruta_sdscr_info)
+    #print("The SDSCR path is:",ruta_sdscr_info)
     
     archivos_requeridos = {
         "buses": os.path.join(ruta_sdscr_info, "buses.csv"),
@@ -1347,20 +1341,20 @@ def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
         "Zbus": os.path.join(ruta_positive2, "Zbus.csv")
     }
     
-    # Verificar que existan todos los archivos requeridos
+    # Verify that all required files exist
     for nombre, ruta in archivos_requeridos.items():
         if not os.path.exists(ruta):
             print(f"  ❌ No se encuentra {nombre}: {ruta}")
             return False
     
-    print("  ✅ Todos los archivos requeridos para SDSCR encontrados")
+    print("  ✅ All required files for SDSCR found")
     
     try:
-        # Crear carpeta temporal para SDSCR
+        # Create temporary folder for SDSCR
         temp_sdscr_folder = os.path.join(escenario_output_path, "SDSCR_temp")
         os.makedirs(temp_sdscr_folder, exist_ok=True)
         
-        # Copiar archivos necesarios a la carpeta temporal
+        # Copy required files to the temporary folder
         import shutil
         for archivo in ["buses", "generators", "renewables", "branches", "loads", "transformers"]:
             shutil.copy2(archivos_requeridos[archivo], os.path.join(temp_sdscr_folder, f"{archivo}.csv"))
@@ -1368,28 +1362,28 @@ def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
         shutil.copy2(archivos_requeridos["Ybus"], os.path.join(temp_sdscr_folder, "Ybus_export.csv"))
         shutil.copy2(archivos_requeridos["Zbus"], os.path.join(temp_sdscr_folder, "Zbus.csv"))
         
-        # Ejecutar análisis SDSCR
+        # Run SDSCR analysis
         analyzer = SDSCRAnalyzer(data_folder=temp_sdscr_folder)
         results = analyzer.analyze_system_strength()
         
-        # Mover resultados a la carpeta del escenario
+        # Move results to the scenario folder
         temp_results_path = os.path.join(temp_sdscr_folder, "SDSCR_results.csv")
         final_results_path = os.path.join(escenario_output_path, "SDSCR_results.csv")
         
         if os.path.exists(temp_results_path):
             shutil.move(temp_results_path, final_results_path)
         
-        # Limpiar carpeta temporal
+        # Clean temporary folder
         shutil.rmtree(temp_sdscr_folder)
         
-        print(f"  💾 Resultados SDSCR guardados en: {final_results_path}")
+        print(f"  💾 SDSCR results saved in: {final_results_path}")
         return True
         
     except Exception as e:
-        print(f"  ❌ Error calculando SDSCR para {escenario_nombre}: {str(e)}")
+        print(f"  ❌ Error calculating SDSCR for {escenario_nombre}: {str(e)}")
         import traceback
         traceback.print_exc()
-        # Intentar limpiar carpeta temporal en caso de error
+        # Attempt to clean temporary folder in case of error
         try:
             temp_sdscr_folder = os.path.join(escenario_output_path, "SDSCR_temp")
             if os.path.exists(temp_sdscr_folder):
@@ -1399,50 +1393,50 @@ def procesar_sdscr_escenario(escenario_input_path, escenario_output_path):
         return False
 
 # =============================================================================
-# BLOQUE 9: FUNCIÓN PARA CÁLCULO SCR (Short Circuit Ratio)
+# BLOCK 9: FUNCTION FOR SCR CALCULATION (Short Circuit Ratio)
 # =============================================================================
 
 def procesar_scr_escenario(escenario_input_path, escenario_output_path):
     """
-    Calcula el Short Circuit Ratio (SCR) a partir de los archivos de Informacion SCR.
+    Calculate the Short Circuit Ratio (SCR) using the SCR information files.
     
     SCR = S_cc / P_nom
     
-    Donde:
-    - S_cc: Potencia de cortocircuito en el nodo de alta tensión [MVA]
-    - P_nom: Potencia nominal del generador en falla [MW]
+    Where:
+    - S_cc: Short-circuit power at the high-voltage node [MVA]
+    - P_nom: Rated power of the faulted generator [MW]
     """
     escenario_nombre = os.path.basename(escenario_input_path)
-    print(f"  🔄 Calculando SCR para {escenario_nombre}...")
+    print(f"  🔄 Calculating SCR for {escenario_nombre}...")
     
-    # Ruta del archivo de Informacion SCR
+    # SCR information file path
     scr_info_folder = os.path.join(escenario_input_path, "Informacion SCR")
     
-    # Buscar archivo de informacion SCR
+    # Find SCR information file
     import glob
     archivos_scr = glob.glob(os.path.join(scr_info_folder, "informacion_SCR_*.csv"))
     if not archivos_scr:
-        print(f"  ❌ No se encuentra archivo de Informacion SCR en {scr_info_folder}")
+        print(f"  ❌ No SCR Information file found in {scr_info_folder}")
         return False
     
     scr_csv_path = archivos_scr[0]
     
     try:
-        # Leer archivo CSV
+        # Read CSV file
         df = pd.read_csv(scr_csv_path, delimiter=';')
         
-        # Convertir coma decimal a punto para números
+        # Convert decimal comma to period for numbers
         for col in ['potencia_cortocircuito_mva', 'potencia_gen1_mw', 'potencia_gen2_mw']:
             if col in df.columns:
                 df[col] = df[col].astype(str).str.replace(',', '.').astype(float)
         
-        # Calcular SCR para cada generador
+        # Calculate SCR for each generator
         resultados = []
         
         for _, row in df.iterrows():
             s_cc = row['potencia_cortocircuito_mva']
             
-            # Identificar potencia del generador en falla
+            # Identify generator power during the fault
             if row['generador_en_falla'] == 'PV1':
                 p_gen = row['potencia_gen1_mw']
                 generador = 'PV1'
@@ -1450,7 +1444,7 @@ def procesar_scr_escenario(escenario_input_path, escenario_output_path):
                 p_gen = row['potencia_gen2_mw']
                 generador = 'PV2'
             
-            # Calcular SCR
+            # Calculate SCR
             scr = s_cc / p_gen if p_gen > 0 else float('inf')
             
             resultados.append({
@@ -1461,87 +1455,87 @@ def procesar_scr_escenario(escenario_input_path, escenario_output_path):
                 'SCR_scr': scr
             })
         
-        # Crear DataFrame y guardar resultados
+        # Create DataFrame and save results
         if resultados:
             resultados_df = pd.DataFrame(resultados)
             
-            # Guardar resultados
+            # Save results
             output_path = os.path.join(escenario_output_path, "SCR_results.csv")
             resultados_df.to_csv(output_path, index=False, encoding='utf-8-sig')
             
-            # Mostrar resultados en consola
-            print(f"\n  📊 RESULTADOS SCR - {escenario_nombre}")
+            # Display results in console
+            print(f"\n  📊 SCR RESULTS - {escenario_nombre}")
             print(f"  {'='*50}")
             for _, res in resultados_df.iterrows():
                 print(f"    🔌 {res['Generador']}: P = {res['Potencia_Generador_MW']:.1f} MW, "
                       f"S_cc = {res['Potencia_Cortocircuito_MVA']:.2f} MVA, "
                       f"SCR = {res['SCR_scr']:.3f}")
             
-            print(f"\n  💾 Resultados SCR guardados en: {output_path}")
+            print(f"\n  💾 SCR results saved in: {output_path}")
             return True
         else:
-            print(f"  ❌ No se generaron resultados SCR para {escenario_nombre}")
+            print(f"  ❌ No SCR results were generated for {escenario_nombre}")
             return False
             
     except Exception as e:
-        print(f"  ❌ Error calculando SCR para {escenario_nombre}: {str(e)}")
+        print(f"  ❌ Error calculating SCR for {escenario_nombre}: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
 
 # =============================================================================
-# BLOQUE 8: FUNCIÓN PRINCIPAL DE PROCESAMIENTO
+# BLOCK 8: MAIN PROCESSING FUNCTION
 # =============================================================================
 
 def procesar_escenario_completo(escenario_input_path, escenario_output_path):
-    """Ejecuta todos los cálculos (Zbus, GSIM, NRSCR, LSCR, SDSCR y SCR) para un escenario"""
+    """Performs all calculations (Zbus, GSIM, NRSCR, LSCR, SDSCR, and SCR) for a scenario"""
     escenario_nombre = os.path.basename(escenario_input_path)
     print(f"\n{'='*60}")
-    print(f"🎯 PROCESANDO ESCENARIO: {escenario_nombre}")
+    print(f"🎯 PROCESSING SCENARIO: {escenario_nombre}")
     print(f"{'='*60}")
     
-    # Paso 1: Calcular Zbus
+    # Step 1: Calculate Zbus
     zbus_exitoso = calcular_zbus_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 2: Calcular GSIM (solo si Zbus fue exitoso)
+    # Step 2: Calculate GSIM (only if Zbus was successful)
     if zbus_exitoso:
         gsim_exitoso = procesar_gsim_escenario(escenario_input_path, escenario_output_path)
     else:
         gsim_exitoso = False
-        print(f"  ⏩ Saltando GSIM por falla en Zbus")
+        print(f"  ⏩ Skipping GSIM due to Zbus failure")
     
-    # Paso 3: Calcular NRSCR (independiente de los anteriores)
+    # Step 3: Calculate NRSCR (independent of the previous ones)
     nrscr_exitoso = procesar_nrscr_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 4: Calcular LSCR (independiente de los anteriores)
+    # Step 4: Calculate LSCR (independent of the previous ones)
     lscr_exitoso = procesar_lscr_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 5: Calcular SDSCR (requiere Zbus)
+    # Step 5: Calculate SDSCR (requires Zbus)
     if zbus_exitoso:
         sdscr_exitoso = procesar_sdscr_escenario(escenario_input_path, escenario_output_path)
     else:
         sdscr_exitoso = False
-        print(f"  ⏩ Saltando SDSCR por falla en Zbus")
+        print(f"  ⏩ Bypassing SDSCR due to Zbus failure")
     
-    # Paso 6: Calcular SCR (nuevo) - independiente de Zbus
+    # Step 6: Calculate SCR (new) - independent of Zbus
     scr_exitoso = procesar_scr_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 7: Compilar resultados
+    # Step 7: Compile results
     compilacion_exitosa = compilar_resultados_escenario(escenario_output_path)
     
     return (zbus_exitoso, gsim_exitoso, nrscr_exitoso, lscr_exitoso, 
             sdscr_exitoso, scr_exitoso, compilacion_exitosa)
 
 # =============================================================================
-# BLOQUE 10: COMPILACIÓN DE RESULTADOS PARA CADA ESCENARIO
+# BLOCK 10: RESULTS COMPILATION FOR EACH SCENARIO
 # =============================================================================
 
 def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
-    """Compila todos los resultados de un escenario en un solo archivo CSV"""
+    """Compiles all results from a scenario into a single CSV file"""
     escenario_nombre = os.path.basename(escenario_input_path)
-    print(f"  🔄 Compilando resultados para {escenario_nombre}...")
+    print(f"  🔄 Compiling results for {escenario_nombre}...")
     
-    # Rutas de los archivos de resultados
+    # Result file paths
     archivos_resultados = {
         "GSIM": os.path.join(escenario_output_path, "GSIM_results.csv"),
         "NRSCR": os.path.join(escenario_output_path, "NRSCR_results.csv"),
@@ -1549,23 +1543,23 @@ def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
         "LSCR": os.path.join(escenario_output_path, "LSCR_results.csv")
     }
     
-    # Verificar qué archivos existen
+    # Check which files exist
     archivos_existentes = {}
     for nombre, ruta in archivos_resultados.items():
         if os.path.exists(ruta):
             archivos_existentes[nombre] = ruta
         else:
-            print(f"  ⚠️ No se encuentra {nombre}: {ruta}")
+            print(f"  ⚠️ Not found {nombre}: {ruta}")
     
     if not archivos_existentes:
-        print(f"  ❌ No hay archivos de resultados para compilar en {escenario_nombre}")
+        print(f"  ❌ There are no output files to compile in {escenario_nombre}")
         return False
     
     try:
-        # Diccionario para almacenar todos los datos compilados
+        # Dictionary to store all compiled data
         datos_compilados = []
         
-        # ========== PROCESAR GSIM ==========
+        # ========== PROCESS GSIM ==========
         if "GSIM" in archivos_existentes:
             gsim_df = pd.read_csv(archivos_existentes["GSIM"])
             for _, fila in gsim_df.iterrows():
@@ -1579,7 +1573,7 @@ def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
                     "SCR_HV": fila["SCR_HV"],
                     "GSIM_LV": fila["GSIM_lv"],
                     "GSIM_HV": fila["GSIM_hv"],
-                    "Valor_Principal": fila["GSIM_hv"],  # Usamos HV como valor principal
+                    "Valor_Principal": fila["GSIM_hv"],  # Use HV as the main value
                     "q_LV": fila["q_lv"],
                     "d_LV": fila["d_lv"],
                     "q_HV": fila["q_hv"],
@@ -1589,7 +1583,7 @@ def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
                     "Transformador": fila["transformador"]
                 })
         
-        # ========== PROCESAR NRSCR ==========
+        # ========== PROCESS NRSCR ==========
         if "NRSCR" in archivos_existentes:
             nrscr_df = pd.read_csv(archivos_existentes["NRSCR"])
             for _, fila in nrscr_df.iterrows():
@@ -1608,10 +1602,10 @@ def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
                     "Nodo_Alta": fila["Nodo Alta"]
                 })
         
-        # ========== PROCESAR SDSCR ==========
+        # ========== PROCESS SDSCR ==========
         if "SDSCR" in archivos_existentes:
             sdscr_df = pd.read_csv(archivos_existentes["SDSCR"])
-            # Filtrar solo buses PV1 y PV2 (nodos 4 y 7)
+            # Filter only PV1 and PV2 buses (nodes 4 and 7)
             buses_interes = ["BUS 4", "BUS 7", "4", "7", "PV1 LV", "PV2 LV"]
             for _, fila in sdscr_df.iterrows():
                 bus = fila["Bus"]
@@ -1623,15 +1617,15 @@ def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
                         "SCR": fila["SCR"],
                         "SDSCR_Coupled": fila["SDSCR_coupled"],
                         "SDSCR_No_Coupling": fila["SDSCR_no_coupling"],
-                        "Valor_Principal": fila["SDSCR_coupled"],  # Usamos coupled como valor principal
+                        "Valor_Principal": fila["SDSCR_coupled"],  # Use coupled as the main value
                         "Strength": fila["Strength"],
                         "SCC_MVA": fila["SCC (MVA)"]
                     })
         
-        # ========== PROCESAR LSCR ==========
+        # ========== PROCESS LSCR ==========
         if "LSCR" in archivos_existentes:
             lscr_df = pd.read_csv(archivos_existentes["LSCR"])
-            # Filtrar solo PV1 y PV2
+            # Filter only PV1 and PV2
             for _, fila in lscr_df.iterrows():
                 generador = fila["Generador"]
                 if "PV1" in generador or "PV2" in generador:
@@ -1648,133 +1642,133 @@ def compilar_resultados_escenario(escenario_input_path, escenario_output_path):
                         "λSCR_normal": fila["λSCR_normal"],
                         "K_vtg_fault": fila["K_vtg_fault"],
                         "λSCR_fault": fila["λSCR_fault"],
-                        "Valor_Principal": fila["λSCR_normal"]  # Usamos λSCR_normal como valor principal
+                        "Valor_Principal": fila["λSCR_normal"]  # Use λSCR_normal as the main value
                     })
         
-        # ========== GUARDAR RESULTADOS COMPILADOS ==========
+        # ========== SAVE COMPILED RESULTS ==========
         if datos_compilados:
             df_compilado = pd.DataFrame(datos_compilados)
             
-            # Ruta de salida para el archivo compilado
+            # Output path for the compiled file
             ruta_resultados_comv = escenario_output_path
             archivo_compilado = os.path.join(ruta_resultados_comv, f"Resultados_Compilados_{escenario_nombre}.csv")
             
             df_compilado.to_csv(archivo_compilado, index=False, encoding='utf-8-sig')
             
-            print(f"  ✅ Resultados compilados guardados en: {archivo_compilado}")
-            print(f"  📊 Total de registros compilados: {len(datos_compilados)}")
+            print(f"  ✅ Compiled results saved in: {archivo_compilado}")
+            print(f"  📊 Total records compiled: {len(datos_compilados)}")
             
-            # Mostrar resumen por método
+            # Display summary by method
             metodos = df_compilado["Metodo"].value_counts()
-            print(f"  📋 Resumen por método:")
+            print(f"  📋 Summary by method:")
             for metodo, count in metodos.items():
                 print(f"     • {metodo}: {count} registros")
             
             return True
         else:
-            print(f"  ❌ No se pudieron compilar datos para {escenario_nombre}")
+            print(f"  ❌ Data could not be compiled for {escenario_nombre}")
             return False
             
     except Exception as e:
-        print(f"  ❌ Error compilando resultados para {escenario_nombre}: {str(e)}")
+        print(f"  ❌ Error compiling results for {escenario_nombre}: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
 
 # =============================================================================
-# ACTUALIZAR LA FUNCIÓN PRINCIPAL DE PROCESAMIENTO
+# UPDATE THE MAIN PROCESSING FUNCTION
 # =============================================================================
 
 def procesar_escenario_completo(escenario_input_path, escenario_output_path):
-    """Ejecuta todos los cálculos (Zbus, GSIM, NRSCR, LSCR, SDSCR y SCR) para un escenario"""
+    """Performs all calculations (Zbus, GSIM, NRSCR, LSCR, SDSCR, and SCR) for a scenario"""
     escenario_nombre = os.path.basename(escenario_input_path)
     print(f"\n{'='*60}")
-    print(f"🎯 PROCESANDO ESCENARIO: {escenario_nombre}")
+    print(f"🎯 PROCESSING SCENARIO: {escenario_nombre}")
     print(f"{'='*60}")
 
-    print(f"📥 Entrada: {escenario_input_path}")
-    print(f"📤 Salida:  {escenario_output_path}")
+    print(f"📥 Input: {escenario_input_path}")
+    print(f"📤 Output:  {escenario_output_path}")
     
-    # Paso 1: Calcular Zbus
+    # Step 1: Calculate Zbus
     zbus_exitoso = calcular_zbus_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 2: Calcular GSIM (solo si Zbus fue exitoso)
+    # Step 2: Calculate GSIM (only if Zbus was successful)
     if zbus_exitoso:
         gsim_exitoso = procesar_gsim_escenario(escenario_input_path, escenario_output_path)
     else:
         gsim_exitoso = False
-        print(f"  ⏩ Saltando GSIM por falla en Zbus")
+        print(f"  ⏩ Skipping GSIM due to Zbus failure")
     
-    # Paso 3: Calcular NRSCR (independiente de los anteriores)
+    # Step 3: Calculate NRSCR (independent of the previous ones)
     nrscr_exitoso = procesar_nrscr_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 4: Calcular LSCR (independiente de los anteriores)
+    # Step 4: Calculate LSCR (independent of the previous ones)
     lscr_exitoso = procesar_lscr_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 5: Calcular SDSCR (requiere Zbus)
+    # Step 5: Calculate SDSCR (requires Zbus)
     if zbus_exitoso:
         sdscr_exitoso = procesar_sdscr_escenario(escenario_input_path, escenario_output_path)
     else:
         sdscr_exitoso = False
-        print(f"  ⏩ Saltando SDSCR por falla en Zbus")
+        print(f"  ⏩ Bypassing SDSCR due to Zbus failure")
     
-    # Paso 6: Calcular SCR (nuevo) - independiente de Zbus
+    # Step 6: Calculate SCR (new) - independent of Zbus
     scr_exitoso = procesar_scr_escenario(escenario_input_path, escenario_output_path)
     
-    # Paso 7: Compilar resultados
+    # Step 7: Compile results
     compilacion_exitosa = compilar_resultados_escenario(escenario_input_path, escenario_output_path)
     
     return (zbus_exitoso, gsim_exitoso, nrscr_exitoso, lscr_exitoso, 
             sdscr_exitoso, scr_exitoso, compilacion_exitosa)
 
 # =============================================================================
-# ACTUALIZAR LA FUNCIÓN MAIN
+# UPDATE THE MAIN FUNCTION
 # =============================================================================
 
 def main():
-    """Función principal que coordina el procesamiento completo"""
-    print("🚀 INICIANDO PROCESAMIENTO COMPLETO (Zbus + GSIM + NRSCR + LSCR + SDSCR + SCR + COMPILACIÓN)")
-    print(f"📁 Ruta base de entrada: {INPUT_PATH}")
-    print(f"📁 Ruta de salida: {OUTPUT_PATH}")
+    """Main function that coordinates the entire processing"""
+    print("🚀 STARTING FULL PROCESSING (Zbus + GSIM + NRSCR + LSCR + SDSCR + SCR + COMPILACIÓN)")
+    print(f"📁 Base entry route: {INPUT_PATH}")
+    print(f"📁 Exit route: {OUTPUT_PATH}")
     
-    # Encontrar todos los escenarios
+    # Find all scenarios
     escenarios = encontrar_escenarios(INPUT_PATH)
     
     if not escenarios:
-        print("❌ No se encontraron carpetas de escenarios")
+        print("❌ No scenario folders were found")
         return
     
-    print(f"📋 Escenarios encontrados: {len(escenarios)}")
+    print(f"📋 Scenarios encountered: {len(escenarios)}")
     for i, esc in enumerate(escenarios, 1):
         print(f"   {i}. {os.path.basename(esc)}")
     
-    # Procesar cada escenario
+    # Process each scenario
     resultados = []
 
     for escenario_path in escenarios:
 
-        # Nombre del escenario
+        # Scenario name
         nombre_escenario = os.path.basename(escenario_path)
 
         # --------------------------------------------------------
-        # ENTRADA
-        # Archivos generados por extract_scenario_data.py
+        # INPUT
+        # Files generated by extract_scenario_data.py
         # --------------------------------------------------------
         escenario_input_path = Path(escenario_path)
 
         # --------------------------------------------------------
-        # SALIDA
-        # Resultados generados por calculate_indicators.py
+        # OUTPUT
+        # Results generated by calculate_indicators.py
         # --------------------------------------------------------
         escenario_output_path = OUTPUT_PATH / nombre_escenario
 
-        # Crear carpeta de salida
+        # Create output folder
         escenario_output_path.mkdir(parents=True, exist_ok=True)
 
         print(f"\n{'='*80}")
-        print(f"🔹 Procesando {nombre_escenario}")
-        print(f"📥 Entrada: {escenario_input_path}")
-        print(f"📤 Salida:  {escenario_output_path}")
+        print(f"🔹 Processing {nombre_escenario}")
+        print(f"📥 Input: {escenario_input_path}")
+        print(f"📤 Output:  {escenario_output_path}")
         print(f"{'='*80}")
 
         zbus_ok, gsim_ok, nrscr_ok, lscr_ok, sdscr_ok, scr_ok, compilacion_ok = \
@@ -1794,9 +1788,9 @@ def main():
             "compilacion_exitosa": compilacion_ok
         })
     
-    # Resumen final
+    # Final summary
     print(f"\n{'='*80}")
-    print(f"🎉 PROCESAMIENTO COMPLETADO - RESUMEN FINAL")
+    print(f"🎉 PROCESSING COMPLETED - FINAL SUMMARY")
     print(f"{'='*80}")
     
     total_escenarios = len(resultados)
@@ -1808,18 +1802,18 @@ def main():
     scr_exitosos = sum(1 for r in resultados if r["scr_exitoso"])
     compilacion_exitosos = sum(1 for r in resultados if r["compilacion_exitosa"])
     
-    print(f"📊 Estadísticas:")
-    print(f"   • Total de escenarios: {total_escenarios}")
-    print(f"   • Zbus exitosos: {zbus_exitosos}/{total_escenarios}")
-    print(f"   • GSIM exitosos: {gsim_exitosos}/{total_escenarios}")
-    print(f"   • NRSCR exitosos: {nrscr_exitosos}/{total_escenarios}")
-    print(f"   • LSCR exitosos: {lscr_exitosos}/{total_escenarios}")
-    print(f"   • SDSCR exitosos: {sdscr_exitosos}/{total_escenarios}")
-    print(f"   • SCR exitosos: {scr_exitosos}/{total_escenarios}")
-    print(f"   • Compilaciones exitosas: {compilacion_exitosos}/{total_escenarios}")
+    print(f"📊 Statistics:")
+    print(f"   • Total number of scenarios: {total_escenarios}")
+    print(f"   • Successful Zbuses: {zbus_exitosos}/{total_escenarios}")
+    print(f"   • Successful GSIM: {gsim_exitosos}/{total_escenarios}")
+    print(f"   • Successful NRSCR: {nrscr_exitosos}/{total_escenarios}")
+    print(f"   • Successful LSCR: {lscr_exitosos}/{total_escenarios}")
+    print(f"   • Successful SDSCR: {sdscr_exitosos}/{total_escenarios}")
+    print(f"   • Successful SCR: {scr_exitosos}/{total_escenarios}")
+    print(f"   • Successful compilations: {compilacion_exitosos}/{total_escenarios}")
     
-    # Mostrar detalles por escenario
-    print(f"\n📋 Detalle por escenario:")
+    # Display details by scenario
+    print(f"\n📋 Details by scenario:")
     for resultado in resultados:
         status = ""
         status += "✅" if resultado["zbus_exitoso"] else "❌"
@@ -1831,14 +1825,14 @@ def main():
         status += "✅" if resultado["compilacion_exitosa"] else "❌"
         print(f"   {status} {resultado['escenario']}")
     
-    print(f"\n💾 Todos los resultados guardados en sus respectivas carpetas de escenario")
-    print(f"   - Zbus.csv en Escenario_X/Positive/")
-    print(f"   - GSIM_results.csv en Escenario_X/")
-    print(f"   - NRSCR_results.csv en Escenario_X/")
-    print(f"   - LSCR_results.csv en Escenario_X/")
-    print(f"   - SDSCR_results.csv en Escenario_X/")
-    print(f"   - SCR_results.csv en Escenario_X/")
-    print(f"   - Resultados compilados en: {OUTPUT_PATH}")
+    print(f"\n💾 All results saved in their respective scenario folders")
+    print(f"   - Zbus.csv in Escenario_X/Positive/")
+    print(f"   - GSIM_results.csv in Scenario_X/")
+    print(f"   - NRSCR_results.csv in Scenario_X/")
+    print(f"   - LSCR_results.csv in Scenario_X/")
+    print(f"   - SDSCR_results.csv in Scenario_X/")
+    print(f"   - SCR_results.csv in Scenario_X/")
+    print(f"   - Resultados compilados in: {OUTPUT_PATH}")
 
 if __name__ == "__main__":
     main()

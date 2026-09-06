@@ -7,22 +7,22 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pathlib import Path
 
 
-# Raíz del repositorio
+# Repository root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Ejemplo que se desea procesar
+# Example to be processed
 EXAMPLE = "IEEE39"
-#Tipo de genración
-GENTIP = "IND" # Si es Inductivo "IND", si es capacitivo "CAP"
-#Tipo de genración
-SCENARIO = EXAMPLE + "I" # Si es Inductivo "I", si es capacitivo "C"
+#Generation type
+GENTIP = "IND" # If inductive "IND", if capacitive "CAP"
+#Generation type
+SCENARIO = EXAMPLE + "I" # If inductive "I", if capacitive "C"
 
 ######################################################################
 ################ 1.Definicion Margen Real de Potencia ################
 ######################################################################
 
 # =========================
-# CONFIGURACIÓN DE RUTAS
+# PATH CONFIGURATION
 # =========================
 
 INPUT_PATH1 = REPO_ROOT / "data" / "results" / EXAMPLE / SCENARIO
@@ -36,13 +36,13 @@ powers_file = os.path.join(INPUT_PATH2, "Potencias_Comp_PV1_PV2.xlsx")
 output_file = os.path.join(OUTPUT_PATH1, "Margenes_PV1_PV2.csv")
 
 # =========================
-# CARGA DE DATOS
+# DATA LOADING
 # =========================
 
 boundary_df = pd.read_csv(boundary_file)
 powers_df = pd.read_excel(powers_file)
 
-# Renombrar columnas para claridad
+# Rename columns for clarity
 boundary_df = boundary_df.rename(columns={
     "P1_MW": "PV1_Pmax",
     "P2_MW": "PV2_Pmax"
@@ -54,7 +54,7 @@ powers_df = powers_df.rename(columns={
 })
 
 # =========================
-# CÁLCULO DE MÁRGENES
+# MARGIN CALCULATION
 # =========================
 
 results = []
@@ -63,25 +63,25 @@ for _, scen in powers_df.iterrows():
     pv1_base = scen["PV1_Pbase"]
     pv2_base = scen["PV2_Pbase"]
 
-    # Distancia euclidiana a la frontera Pimax
+    # Euclidean distance to the Pimax boundary
     boundary_df["dist"] = np.sqrt(
         (boundary_df["PV1_Pmax"] - pv1_base)**2 +
         (boundary_df["PV2_Pmax"] - pv2_base)**2
     )
 
-    # Punto más cercano sobre la frontera
+    # Closest point on the boundary
     closest = boundary_df.loc[boundary_df["dist"].idxmin()].copy()
 
-    # Guardar datos del escenario
+    # Save scenario data
     closest["Escenario"] = scen["Escenario"]
     closest["PV1_Pbase"] = pv1_base
     closest["PV2_Pbase"] = pv2_base
 
-    # Margen real de potencia
+    # Real power margin
     closest["Margin_PV1"] = closest["PV1_Pmax"] - pv1_base
     closest["Margin_PV2"] = closest["PV2_Pmax"] - pv2_base
 
-    # Margen total (norma)
+    # Total margin (norm)
     closest["Margin_Total"] = np.sqrt(
         closest["Margin_PV1"]**2 + closest["Margin_PV2"]**2
     )
@@ -89,13 +89,13 @@ for _, scen in powers_df.iterrows():
     results.append(closest)
 
 # =========================
-# EXPORTAR RESULTADOS
+# EXPORT RESULTS
 # =========================
 
 result_df = pd.DataFrame(results)
 result_df.to_csv(output_file, index=False)
 
-print("Archivo generado exitosamente:")
+print("File successfully generated:")
 print(output_file)
 
 ######################################################################
@@ -108,7 +108,7 @@ Indicadores_file = os.path.join(INPUT_PATH3,f"resumen_combinado_completo_{GENTIP
 outputInd_file = os.path.join(OUTPUT_PATH1, "Indicadores_Normalizados.csv")
 
 # =========================
-# CARGA DE DATOS
+# DATA LOADING
 # =========================
 
 Ind_df = pd.read_csv(Indicadores_file)
@@ -124,28 +124,28 @@ indicator_cols = [
     "K_vtg_normal_LSCR"
 ]
 
-escenario_col = Ind_df["Escenario"] #Se guarda columna Escenario por separado
-Bus_PV = Ind_df["Bus_LV"] #Se guarda columna Escenario por separado
+escenario_col = Ind_df["Escenario"] #Scenario column is stored separately
+Bus_PV = Ind_df["Bus_LV"] #Scenario column is stored separately
 indicators_df = Ind_df[indicator_cols].copy()
 
 # =========================
-# NORMALIZACIÓN 1 — MINMAX
+# NORMALIZATION 1 — MINMAX
 # =========================
 
 minmax_Ind_df = (indicators_df - indicators_df.min()) / (indicators_df.max() - indicators_df.min())
 
 # =========================
-# NORMALIZACIÓN 2 — ZSCORE (revisar la presuncion de los resultados, como comprobarlo)
+# NORMALIZATION 2 — Z-SCORE (review the assumption about the results and how to verify it)
 # =========================
 
-zscore_df = (indicators_df - indicators_df.mean()) / indicators_df.std() #Buscar la forma de sustentar el comportamiento de los resultados
+zscore_df = (indicators_df - indicators_df.mean()) / indicators_df.std() #Find a way to support the behavior of the results
 
 #######################################################################################################
 ####################### Sustentacion de comportamiento de los resultados ##############################
 #######################################################################################################
 
 # ------------------------------------------------
-# 1. Estadísticas antes de normalizar
+# 1. Statistics before normalization
 # ------------------------------------------------
 
 stats_original = pd.DataFrame({
@@ -158,7 +158,7 @@ stats_original = pd.DataFrame({
 stats_original.to_csv("Estadisticas_Originales.csv")
 
 # ------------------------------------------------
-# 2. Verificación de propiedades del Z-score
+# 2. Verification of Z-score properties
 # ------------------------------------------------
 
 stats_zscore = pd.DataFrame({
@@ -170,17 +170,17 @@ stats_zscore = pd.DataFrame({
 
 stats_zscore.to_csv("Estadisticas_Zscore.csv")
 
-print("Media promedio tras normalización:",
+print("Average mean after normalization:",
       round(stats_zscore["Media_Z"].mean(), 6))
 
-print("Desviación estándar promedio tras normalización:",
+print("Average standard deviation after normalization:",
       round(stats_zscore["Desviacion_std_Z"].mean(), 6))
 
 #######################################################################################################
 #######################################################################################################
 
 # =========================
-# NORMALIZACIÓN 3
+# NORMALIZATION 3
 # =========================
 
 critical_values = {
@@ -193,31 +193,31 @@ critical_values = {
 }
 
 # =========================
-# NORMALIZACIÓN 4 — Normalización en función del SCR_scr
+# NORMALIZATION 4 — Normalization based on SCR_scr
 # =========================
 
-# Parámetro crítico de referencia del SCR
+# SCR reference critical parameter
 SCR_crit = critical_values["SCR_scr"]
 
-# Copia del dataframe
+# DataFrame copy
 scr_norm_df = indicators_df.copy()
 
-# SCR por escenario
+# SCR by scenario
 SCR_ref = indicators_df["SCR_scr"]
 
 for col in indicator_cols:
 
     if col == "SCR_scr":
-        # El SCR se normaliza respecto a sí mismo
+        # SCR is normalized with respect to itself
         scr_norm_df[col] = SCR_ref / SCR_crit
     else:
-        # Normalización relativa al SCR
+        # Normalization relative to SCR
         scr_norm_df[col] = (
             (indicators_df[col] / critical_values[col]) /
             (SCR_ref / SCR_crit)
         )
 
-# Evitar divisiones problemáticas
+# Avoid problematic divisions
 scr_norm_df = scr_norm_df.replace([np.inf, -np.inf], np.nan)
 
 eng_norm_df = indicators_df.copy()
@@ -226,7 +226,7 @@ for col in indicator_cols:
     eng_norm_df[col] = indicators_df[col] / critical_values[col]
 
 # =========================
-# GUARDAR RESULTADOS
+# SAVE RESULTS
 # =========================
 
 combined = pd.concat([
@@ -241,7 +241,7 @@ combined = pd.concat([
 
 combined.to_csv(outputInd_file, index=False)
 
-print("Archivo generado:")
+print("File generated:")
 print(outputInd_file)
 
 
@@ -250,12 +250,12 @@ print(outputInd_file)
 ######################################################################
 
 print("\n==============================")
-print("Cálculo de Inorm y gráficas")
+print("Inorm calculation and graphs")
 print("==============================")
 
 # ============================================================
-# DEFINICIÓN DE PARÁMETROS CRÍTICOS
-# (ajustar si es necesario)
+# DEFINITION OF CRITICAL PARAMETERS
+# (adjust if necessary)
 # ============================================================
 
 critical_values = {
@@ -268,7 +268,7 @@ critical_values = {
 }
 
 # ============================================================
-# CARGAR ARCHIVO BASE
+# LOAD BASE FILE
 # ============================================================
 
 indicators_file = os.path.join(INPUT_PATH3,f"resumen_combinado_completo_{GENTIP}.csv")
@@ -280,8 +280,8 @@ df = pd.read_csv(indicators_file)
 indicator_cols = list(critical_values.keys())
 
 # ============================================================
-# CÁLCULO Inorm
-# Inorm = Indicador / Valor_critico
+# Inorm CALCULATION
+# Inorm = Indicator / Critical_value
 # ============================================================
 
 Inorm_df = df[["Escenario", "Bus_LV"]].copy()
@@ -292,17 +292,17 @@ for col in indicator_cols:
 
     Inorm_df[col + "_Inorm"] = df[col] / crit
 
-# Limpiar valores problemáticos
+# Clean problematic values
 Inorm_df = Inorm_df.replace([np.inf, -np.inf], np.nan)
 
-# Guardar resultados
+# Save results
 Inorm_df.to_csv(Inorm_output_file, index=False)
 
-print("Archivo Inorm generado:")
+print("Inorm file generated:")
 print(Inorm_output_file)
 
 # ============================================================
-# CREAR CARPETA DE FIGURAS
+# CREATE FIGURE FOLDER
 # ============================================================
 
 FIG_PATH = OUTPUT_PATH1
@@ -310,7 +310,7 @@ FIG_INORM_PATH = os.path.join(FIG_PATH, "Normalized graphs")
 os.makedirs(FIG_INORM_PATH, exist_ok=True)
 
 # ============================================================
-# FIGURA 1 — Inorm por escenario
+# FIGURE 1 — Inorm by scenario
 # ============================================================
 
 for bus in Inorm_df["Bus_LV"].unique():
@@ -329,8 +329,8 @@ for bus in Inorm_df["Bus_LV"].unique():
 
     plt.axhline(1, linestyle="--")
 
-    plt.title(f"Inorm por Escenario — Bus {bus}", fontsize=16)
-    plt.xlabel("Escenario", fontsize=14)
+    plt.title(f"Inorm by Scenario — Bus {bus}", fontsize=16)
+    plt.xlabel("Scenario", fontsize=14)
     plt.ylabel("Inorm", fontsize=14)
     plt.xticks(rotation=45)
 
@@ -347,7 +347,7 @@ for bus in Inorm_df["Bus_LV"].unique():
     plt.close()
 
 # ============================================================
-# FIGURA 2 — RAZON RESPECTO A SCR
+# FIGURE 2 — RATIO WITH RESPECT TO SCR
 # ΔInorm = Inorm_i / Inorm_SCR
 # ============================================================
 
@@ -374,9 +374,9 @@ for bus in Inorm_df["Bus_LV"].unique():
 
     plt.axhline(0, linestyle="--")
 
-    plt.title(f"Razón Inorm respecto a SCR — Bus {bus}", fontsize=16)
-    plt.xlabel("Escenario", fontsize=14)
-    plt.ylabel("Inorm Indicador/Inorm SCR", fontsize=14)
+    plt.title(f"Inorm reason regarding SCR — Bus {bus}", fontsize=16)
+    plt.xlabel("Scenario", fontsize=14)
+    plt.ylabel("Inorm Indicator/Inorm SCR", fontsize=14)
 
     plt.xticks(rotation=45)
 
@@ -393,7 +393,7 @@ for bus in Inorm_df["Bus_LV"].unique():
     plt.close()
 
 # ============================================================
-# FIGURA 3 — BOXLOT GLOBAL (CON ZOOM)
+# FIGURE 3 — GLOBAL BOXPLOT (WITH ZOOM)
 # ============================================================
 
 Inorm_cols = [
@@ -412,11 +412,11 @@ Inorm_df.boxplot(
 
 ax.axhline(1, linestyle="--")
 
-ax.set_title("Distribución global de Inorm", fontsize=16)
+ax.set_title("Global distribution of Inorm", fontsize=16)
 ax.set_ylabel("Inorm", fontsize=14)
 
 # ============================================================
-# INSET (ZOOM λSCR y K_vtg)
+# INSET (ZOOM λSCR and K_vtg)
 # ============================================================
 
 zoom_cols = [
@@ -424,15 +424,15 @@ zoom_cols = [
     "K_vtg_normal_LSCR_Inorm"
 ]
 
-# Crear eje inset (posición: esquina superior derecha)
+# Create inset axis (position: upper-right corner)
 axins = inset_axes(
     ax,
-    width="35%",   # tamaño relativo
+    width="35%",   # relative size
     height="35%",
     loc="upper right"
 )
 
-# Boxplot solo de los indicadores pequeños
+# Boxplot only for the small indicators
 Inorm_df.boxplot(
     column=zoom_cols,
     ax=axins,
@@ -440,15 +440,15 @@ Inorm_df.boxplot(
 )
 
 # --- Ajustar zoom manualmente ---
-# (puedes afinar estos valores según tus datos)
+# (you can fine-tune these values according to your data)
 axins.set_ylim(0, 2)
 
 axins.set_title("Zoom λSCR y K_vtg", fontsize=9)
 
-# Opcional: línea de referencia también en inset
+# Optional: reference line also in inset
 axins.axhline(1, linestyle="--")
 
-# Reducir tamaño de labels
+# Reduce label size
 axins.tick_params(axis='x', labelsize=8)
 axins.tick_params(axis='y', labelsize=8)
 
@@ -464,5 +464,5 @@ plt.savefig(
 
 plt.close()
 
-print("Figuras Inorm generadas en:")
+print("Inorm figures generated in:")
 print(FIG_INORM_PATH)

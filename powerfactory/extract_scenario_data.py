@@ -8,36 +8,36 @@ from pathlib import Path
 
 
 # ============================================================
-# CONFIGURACIÓN DEL USUARIO
+# USER SETTINGS
 # ============================================================
 
-# Raíz del repositorio
+# Repository root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Ejemplo y tipo de generación que se desea procesar
-GENTIP = "IND" # Si es Inductivo "IND", si es capacitivo "CAP"
+# Example and type of generation to be processed
+GENTIP = "IND" # If it is inductive, "IND"; if it is capacitive, "CAP"
 EXAMPLE = "IEEE39"
 
-# Archivo Excel con los escenarios seleccionados
+# Excel file with the selected scenarios
 SCENARIOS_FILE = (REPO_ROOT / "data" / "scenarios" / EXAMPLE / "escenarios.xlsx")
 
-# Carpeta donde se guardarán los resultados de extracción
+# Folder where extraction results will be saved
 OUTPUT_FOLDER = (REPO_ROOT / "data" / "results" / EXAMPLE / GENTIP)
 
-# === CONFIGURACIÓN ===
+# === CONFIGURATIÓN ===
 excel_path = SCENARIOS_FILE
 base_output_path = OUTPUT_FOLDER
 
-# === CONEXIÓN CON POWERFACTORY ===
+# === CONNECTION TO POWERFACTORY ===
 app = pf.GetApplication()
 if not app:
-    raise Exception("No se pudo conectar con PowerFactory. Ejecute este script desde PowerFactory.")
+    raise Exception("Could not connect to PowerFactory. Run this script from PowerFactory.")
 
-app.PrintPlain("=== INICIO DEL SCRIPT DE CAMBIO DE POTENCIAS ===")
+app.PrintPlain("=== START OF POWER-SWITCHING SCRIPT ===")
 
-######## === FUNCIONES DE DATOS GSIM INTEGRADAS === #########
+######## === INTEGRATED GSIM DATA FUNCTIONS === #########
 def get_element_data(element):
-    """Extrae datos básicos de un elemento"""
+    """Extracts basic data from an element"""
     data = {
         'name': element.loc_name,
         'p': element.GetAttribute('P:bus1'),
@@ -50,13 +50,13 @@ def get_element_data(element):
 
 # Function to get bus data
 def get_bus_data(bus):
-    """Extrae datos de buses"""
+    """Extracts data from buses"""
     try:
-        # Obtener voltaje y ángulo actual (puede variar según el estudio)
+        # Obtain current voltage and angle (may vary depending on the study)
         v_mag = bus.GetAttribute('m:U1l:bus')
         v_angle = bus.GetAttribute('phiu:bus')
     except:
-        # Si falla, usar valores nominales
+        # If it fails, use nominal values.
         v_mag = bus.uknom
         v_angle = 0.0
     
@@ -74,9 +74,9 @@ def get_bus_data(bus):
 
 # Function to get generator data (ElmSym)
 def get_generator_data(gen):
-    """Extrae datos de generadores síncronos"""
+    """Extracts data from synchronous generators"""
     try:
-        # Usar atributos específicos para P y Q
+        # Use specific attributes for P and Q.
         p_gen = gen.GetAttribute('n:Pgen:bus1') if hasattr(gen, 'n:Pgen:bus1') else None
         q_gen = gen.GetAttribute('n:Qgen:bus1') if hasattr(gen, 'n:Qgen:bus1') else None
         
@@ -91,7 +91,7 @@ def get_generator_data(gen):
             'v_actual': gen.GetAttribute('m:U1l:bus1') if hasattr(gen, 'm:U1l:bus1') else None
         }
     except Exception as e:
-        app.PrintWarn(f"Error obteniendo datos del generador {gen.loc_name}: {str(e)}")
+        app.PrintWarn(f"Error retrieving data from the generator {gen.loc_name}: {str(e)}")
         data = {
             'name': gen.loc_name,
             'type': 'Synchronous',
@@ -106,28 +106,28 @@ def get_generator_data(gen):
 
 # Function to get line data
 def get_line_data(line):
-    """Extrae datos de líneas"""
+    """Extracts data from lines"""
     try:
-        # Intentar obtener parámetros de la línea
-        r_line = line.GetAttribute('t:rline')  # Resistencia por unidad de longitud
-        x_line = line.GetAttribute('t:xline')  # Reactancia por unidad de longitud
-        b_line = line.GetAttribute('t:bline')  # Susceptancia por unidad de longitud
-        length = line.GetAttribute('dline')    # Longitud de la línea
+        # Attempt to obtain line parameters
+        r_line = line.GetAttribute('t:rline')  # Resistance per unit length
+        x_line = line.GetAttribute('t:xline')  # Reactance per unit length
+        b_line = line.GetAttribute('t:bline')  # Susceptance per unit length
+        length = line.GetAttribute('dline')    # Line length
         
-        # Calcular valores totales
+        # Calculate total values
         r_total = r_line * length if length and r_line else r_line
         x_total = x_line * length if length and x_line else x_line
         b_total = b_line * length if length and b_line else b_line
         
     except:
-        # Si falla, intentar obtener valores totales directamente
+        # If that fails, try to obtain total values ​​directly
         try:
             r_total = line.GetAttribute('Rline')
             x_total = line.GetAttribute('Xline')
             b_total = line.GetAttribute('Bline')
             length = line.GetAttribute('dline') if hasattr(line, 'dline') else None
         except:
-            # Si aún falla, usar valores por defecto
+            # If it still fails, use default values
             r_total = 0.0
             x_total = 0.0
             b_total = 0.0
@@ -150,24 +150,24 @@ def get_line_data(line):
 
 # Function to get transformer data
 def get_transformer_data(trafo):
-    """Extrae datos de transformadores con atributos específicos"""
+    """Extracts data from transformers with specific attributes"""
     try:
-        # Obtener buses conectados al transformador
+        # Obtain buses connected to the transformer
         bus_hv = trafo.bushv.cterm.loc_name if hasattr(trafo, 'bushv') and trafo.bushv else None
         bus_lv = trafo.buslv.cterm.loc_name if hasattr(trafo, 'buslv') and trafo.buslv else None
         
-        # Obtener parámetros con los atributos específicos
+        # Obtain parameters with specific attributes
         r_pu = trafo.GetAttribute('t:r1pu') if hasattr(trafo, 't:r1pu') else None
         x_pu = trafo.GetAttribute('t:x1pu') if hasattr(trafo, 't:x1pu') else None
         s_nom = trafo.GetAttribute('e:Snom') if hasattr(trafo, 'e:Snom') else None
         tap = trafo.GetAttribute('nntap') if hasattr(trafo, 'nntap') else None
         
-        # Obtener voltajes de los buses conectados
+        # Obtain voltages from the connected buses
         voltage_hv = trafo.bushv.GetAttribute('m:Ul') if hasattr(trafo, 'bushv') and trafo.bushv else None
         voltage_lv = trafo.buslv.GetAttribute('m:Ul') if hasattr(trafo, 'buslv') and trafo.buslv else None
         
     except Exception as e:
-        app.PrintWarn(f"Error obteniendo datos del transformador {trafo.loc_name}: {str(e)}")
+        app.PrintWarn(f"Error retrieving transformer data {trafo.loc_name}: {str(e)}")
         bus_hv = None
         bus_lv = None
         r_pu = None
@@ -192,7 +192,7 @@ def get_transformer_data(trafo):
 
 # Function to get PV system data (ElmPvsys)
 def get_pvsys_data(pvsys):
-    """Extrae datos de sistemas PV (inversores)"""
+    """Extracts data from PV systems (inverters)"""
     try:
         data = {
             'name': pvsys.loc_name,
@@ -206,7 +206,7 @@ def get_pvsys_data(pvsys):
             'control_mode': 'Grid-Following'
         }
         
-        # Intentar obtener más información del tipo de control
+        # Try to obtain more information about the type of control
         try:
             if hasattr(pvsys, 'typ_id') and pvsys.typ_id:
                 data['control_type'] = str(pvsys.typ_id)
@@ -214,7 +214,7 @@ def get_pvsys_data(pvsys):
             pass
             
     except Exception as e:
-        app.PrintWarn(f"Error obteniendo datos del PV system {pvsys.loc_name}: {str(e)}")
+        app.PrintWarn(f"Error retrieving data from the PV system {pvsys.loc_name}: {str(e)}")
         data = {
             'name': pvsys.loc_name,
             'type': 'PV System',
@@ -231,7 +231,7 @@ def get_pvsys_data(pvsys):
 
 # Function to get load data
 def get_load_data(load):
-    """Extrae datos de cargas"""
+    """Extracts load data"""
     try:
         data = {
             'name': load.loc_name,
@@ -242,7 +242,7 @@ def get_load_data(load):
             'v_actual': load.GetAttribute('m:U1l:bus1') if hasattr(load, 'm:U1l:bus1') else None
         }
     except Exception as e:
-        app.PrintWarn(f"Error obteniendo datos de la carga {load.loc_name}: {str(e)}")
+        app.PrintWarn(f"Error retrieving load data {load.loc_name}: {str(e)}")
         data = {
             'name': load.loc_name,
             'p': None,
@@ -254,49 +254,49 @@ def get_load_data(load):
     return data
 
 def ejecutar_flujo_carga():
-    """Ejecuta flujo de carga antes de extraer datos"""
+    """Run the load flow before extracting data"""
     try:
-        app.PrintInfo("📊 Ejecutando flujo de carga...")
+        app.PrintInfo("📊 Running load flow...")
         
-        # Obtener el objeto de flujo de carga del estudio actual
+        # Get the load flow object from the current study
         ldf = app.GetFromStudyCase("ComLdf")
         if ldf:
             ldf.Execute()
-            app.PrintInfo("✅ Flujo de carga ejecutado correctamente")
+            app.PrintInfo("✅ Load flow executed successfully")
             return True
         else:
-            app.PrintWarn("⚠ No se encontró el objeto de flujo de carga")
+            app.PrintWarn("⚠ Load flow object not found")
             return False
             
     except Exception as e:
-        app.PrintWarn(f"⚠ Error al ejecutar flujo de carga: {e}")
+        app.PrintWarn(f"⚠ Error executing load flow: {e}")
         return False
 
 # Main data extraction
 def extract_network_data():
-    """Extrae todos los datos de la red"""
+    """Extracts all data from the network"""
     
-    app.PrintInfo("Extrayendo datos de la red...")
+    app.PrintInfo("Extracting data from the network...")
     
-    # Ejecutar flujo de carga primero
+    # Run load flow first
     if not ejecutar_flujo_carga():
-        app.PrintWarn("⚠ No se pudo ejecutar el flujo de carga, los datos pueden estar incompletos")
+        app.PrintWarn("⚠ The load flow could not be executed; the data may be incomplete")
     
     # Get active project
     project = app.GetActiveProject()
     if not project:
-        app.PrintError("No hay proyecto activo")
+        app.PrintError("There is no active project")
         return None
     
-    # Get all relevant elements - buscar diferentes tipos de generadores
+    # Get all relevant elements
     buses = app.GetCalcRelevantObjects('*.ElmTerm')
     lines = app.GetCalcRelevantObjects('*.ElmLne')
     transformers = app.GetCalcRelevantObjects('*.ElmTr2')
     
-    # Buscar diferentes tipos de generadores
-    generators_sync = app.GetCalcRelevantObjects('*.ElmSym')  # Generadores síncronos
-    generators_gen = app.GetCalcRelevantObjects('*.ElmGen')   # Generadores generales
-    generators = generators_sync + generators_gen  # Combinar ambos tipos
+    # Search for different types of generators
+    generators_sync = app.GetCalcRelevantObjects('*.ElmSym')  # Synchronous generators
+    generators_gen = app.GetCalcRelevantObjects('*.ElmGen')   # General generators
+    generators = generators_sync + generators_gen  # Combine both types
     
     pvsys = app.GetCalcRelevantObjects('*.ElmPvsys')
     loads = app.GetCalcRelevantObjects('*.ElmLod')
@@ -341,7 +341,7 @@ def extract_network_data():
     return network_data
 
 def calculate_power_balance(network_data):
-    """Calcula balance de potencia en cada bus"""
+    """Calculate the power balance at each bus"""
     
     # Create bus dictionary for easy access
     bus_dict = {bus['name']: bus for bus in network_data['buses']}
@@ -380,13 +380,13 @@ def calculate_power_balance(network_data):
         bus['q_net'] = bus['q_gen'] - bus['q_load']
 
 def export_to_csv(network_data, output_folder, escenario_num):
-    """Exporta datos a archivos CSV en la ruta especificada"""
+    """Exports data to CSV files at the specified path"""
     
-    # Crear carpeta "Datos GSIM" dentro de la carpeta del escenario
+    # Create a "GSIM Data" folder inside the scenario folder
     gsim_folder = os.path.join(output_folder, "Datos GSIM")
     os.makedirs(gsim_folder, exist_ok=True)
     
-    app.PrintInfo(f"Exportando datos a: {gsim_folder}")
+    app.PrintInfo(f"Exporting data to: {gsim_folder}")
     
     # Export buses
     df_buses = pd.DataFrame(network_data['buses'])
@@ -396,14 +396,14 @@ def export_to_csv(network_data, output_folder, escenario_num):
     df_lines = pd.DataFrame(network_data['lines'])
     df_lines.to_csv(os.path.join(gsim_folder, f'ieee9bus_lines.csv'), index=False, encoding='utf-8')
     
-    # Export transformers - reemplazar NaN con cadenas vacías
+    # Export transformers
     df_trafos = pd.DataFrame(network_data['transformers'])
-    df_trafos = df_trafos.fillna('')  # Reemplazar NaN con cadenas vacías
+    df_trafos = df_trafos.fillna('') 
     df_trafos.to_csv(os.path.join(gsim_folder, f'ieee9bus_transformers.csv'), index=False, encoding='utf-8')
     
-    # Export generators - reemplazar NaN con cadenas vacías
+    # Export generators
     df_gens = pd.DataFrame(network_data['generators'])
-    df_gens = df_gens.fillna('')  # Reemplazar NaN con cadenas vacías
+    df_gens = df_gens.fillna('')
     df_gens.to_csv(os.path.join(gsim_folder, f'ieee9bus_generators.csv'), index=False, encoding='utf-8')
     
     # Export PV systems
@@ -414,26 +414,26 @@ def export_to_csv(network_data, output_folder, escenario_num):
     df_loads = pd.DataFrame(network_data['loads'])
     df_loads.to_csv(os.path.join(gsim_folder, f'ieee9bus_loads.csv'), index=False, encoding='utf-8')
     
-    app.PrintInfo("Datos exportados exitosamente a archivos CSV en la carpeta 'Datos GSIM'")
+    app.PrintInfo("Data successfully exported to CSV files in the 'Datos GSIM' folder")
 
 def print_summary(network_data):
-    """Imprime resumen de la red"""
+    """Print network summary"""
     
-    app.PrintInfo("\n=== RESUMEN DE LA RED ===")
-    app.PrintInfo(f"Número de buses: {len(network_data['buses'])}")
-    app.PrintInfo(f"Número de líneas: {len(network_data['lines'])}")
-    app.PrintInfo(f"Número de transformadores: {len(network_data['transformers'])}")
-    app.PrintInfo(f"Número de generadores síncronos: {len(network_data['generators'])}")
-    app.PrintInfo(f"Número de sistemas PV (inversores): {len(network_data['pvsys'])}")
-    app.PrintInfo(f"Número de cargas: {len(network_data['loads'])}")
+    app.PrintInfo("\n=== NETWORK SUMMARY ===")
+    app.PrintInfo(f"Number of buses: {len(network_data['buses'])}")
+    app.PrintInfo(f"Number of lines: {len(network_data['lines'])}")
+    app.PrintInfo(f"Number of transformers: {len(network_data['transformers'])}")
+    app.PrintInfo(f"Number of synchronous generators: {len(network_data['generators'])}")
+    app.PrintInfo(f"Number of PV systems (inverters): {len(network_data['pvsys'])}")
+    app.PrintInfo(f"Number of loads: {len(network_data['loads'])}")
     
-    # Info de los inversores con manejo seguro de valores None
-    app.PrintInfo("\n=== INFORMACIÓN DE INVERSORES ===")
+    # Inverter information regarding secure securities handling None
+    app.PrintInfo("\n=== INVERTERS INFORMACIÓN ===")
     for pv in network_data['pvsys']:
         app.PrintInfo(f"PV System: {pv['name']}")
         app.PrintInfo(f"  Bus: {pv.get('bus', 'N/A')}")
         
-        # Manejar valores None en P y Q
+        # Handling None values ​​in P and Q
         p_val = pv.get('p')
         q_val = pv.get('q')
         
@@ -444,19 +444,19 @@ def print_summary(network_data):
         
         app.PrintInfo(f"  P: {p_str} MW, Q: {q_str} Mvar")
         app.PrintInfo(f"  S nominal: {s_str} MVA")
-        app.PrintInfo(f"  Voltaje actual: {v_str} kV")
+        app.PrintInfo(f"  Current voltage: {v_str} kV")
         
         if 'control_type' in pv and pv['control_type']:
-            app.PrintInfo(f"  Tipo de control: {pv['control_type']}")
+            app.PrintInfo(f"  Control type: {pv['control_type']}")
     
-    # Info de transformadores con manejo seguro de valores None
-    app.PrintInfo("\n=== INFORMACIÓN DE TRANSFORMADORES ===")
+    # Information on transformers with safe handling of None values
+    app.PrintInfo("\n=== TRANSFORMER INFORMATION ===")
     for trafo in network_data['transformers']:
         app.PrintInfo(f"Transformador: {trafo['name']}")
         app.PrintInfo(f"  Bus HV: {trafo.get('from_bus', 'N/A')}")
         app.PrintInfo(f"  Bus LV: {trafo.get('to_bus', 'N/A')}")
         
-        # Manejo seguro de valores None
+        # Safe handling of valuables
         r_pu = trafo.get('r_pu')
         x_pu = trafo.get('x_pu')
         
@@ -466,51 +466,51 @@ def print_summary(network_data):
             app.PrintInfo(f"  R%: {r_pu if r_pu is not None else 'N/A'}, X%: {x_pu if x_pu is not None else 'N/A'}")
 
 def ejecutar_datos_gsim_completo(escenario_num, output_folder):
-    """Ejecuta la funcionalidad completa de Datos GSIM"""
+    """Executes the full GSIM Data functionality"""
     try:
-        app.PrintInfo(f"🎯 Ejecutando Datos GSIM para escenario {escenario_num}")
+        app.PrintInfo(f"🎯 Executing GSIM data for scenario {escenario_num}")
         
-        # Extraer datos de la red (sin parámetros)
+        # Extract data from the network (without parameters)
         network_data = extract_network_data()
         
         if network_data:
-            # Imprimir resumen
+            # Print summary
             print_summary(network_data)
             
-            # Exportar a CSV
+            # Export to CSV
             export_to_csv(network_data, output_folder, escenario_num)
             
-            app.PrintInfo(f"\n✅ EXTRACCIÓN COMPLETADA PARA ESCENARIO {escenario_num}")
+            app.PrintInfo(f"\n✅ EXTRACTION COMPLETE FOR SCENARIO {escenario_num}")
             return True
         else:
-            app.PrintError("❌ No se pudieron extraer los datos de la red")
+            app.PrintError("❌ The data could not be retrieved from the network")
             return False
             
     except Exception as e:
-        app.PrintError(f"❌ Error durante la extracción: {str(e)}")
+        app.PrintError(f"❌ Error during extraction: {str(e)}")
         import traceback
         app.PrintError(traceback.format_exc())
         return False
 
-######## === FUNCIONES POSITIVE INTEGRADAS === #########
+######## === INTEGRATED POSITIVE FUNCTIONS === #########
 def z_to_y(r, x):
-    """Convierte impedancia a admitancia"""
+    """Converts impedance to admittance"""
     if r == 0 and x == 0:
         return 0
     return 1 / complex(r, x)
 
 def ejecutar_positive_completo(output_folder, escenario_num):
-    """Ejecuta la funcionalidad completa de Positive"""
+    """It runs the full functionality of Positive"""
     try:
-        app.PrintInfo(f"🧮 Ejecutando Positive para escenario {escenario_num}")
+        app.PrintInfo(f"🧮 Executing Positive scenario {escenario_num}")
         
-        # Crear carpeta "Positive" dentro de la carpeta del escenario
+        # Create a "Positive" folder inside the scenario folder
         positive_folder = os.path.join(output_folder, "Positive")
         os.makedirs(positive_folder, exist_ok=True)
         
-        app.PrintInfo("✅ Iniciando cálculo de Ybus (con líneas, trafos, generadores y cargas)...")
+        app.PrintInfo("✅ Starting Ybus calculation (with lines, transformers, generators, and loads)...")
 
-        # Obtener objetos
+        # Obtain items
         buses = app.GetCalcRelevantObjects("*.ElmTerm")
         lines = app.GetCalcRelevantObjects("*.ElmLne")
         trafos = app.GetCalcRelevantObjects("*.ElmTr2")
@@ -518,13 +518,13 @@ def ejecutar_positive_completo(output_folder, escenario_num):
         pvsys_gens = app.GetCalcRelevantObjects("*.ElmPvsys")
         loads = app.GetCalcRelevantObjects("*.ElmLod")
 
-        # Indexar buses
+        # Index buses
         bus_names = [bus.loc_name for bus in buses]
         bus_idx = {name: i for i, name in enumerate(bus_names)}
         n = len(bus_names)
         Ybus = np.zeros((n, n), dtype=complex)
 
-        # ➤ Líneas
+        # ➤ Lines
         for line in lines:
             bus1 = line.bus1.cterm
             bus2 = line.bus2.cterm
@@ -535,7 +535,7 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                 continue
             model = line.typ_id
             if not model:
-                app.PrintInfo(f"⚠️ Línea sin tipo: {line.loc_name}")
+                app.PrintInfo(f"⚠️ Untyped line: {line.loc_name}")
                 continue
             length = line.dline
             r = model.rline * length
@@ -546,26 +546,26 @@ def ejecutar_positive_completo(output_folder, escenario_num):
             Ybus[i, j] -= y
             Ybus[j, i] -= y
 
-        # ➤ Transformadores (usando impedancia en pu desde el tipo)
+        # ➤ Transformers (using per-unit impedance based on type)
         for trafo in trafos:
             term1 = trafo.buslv
             term2 = trafo.bushv
             if not term1 or not term2:
-                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} sin conexión válida")
+                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} without a valid connection")
                 continue
             bus1 = term1.cterm
             bus2 = term2.cterm
             if not bus1 or not bus2:
-                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} con terminales no conectados a nodos")
+                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} with terminals not connected to nodes")
                 continue
             i, j = bus_idx.get(bus1.loc_name), bus_idx.get(bus2.loc_name)
             if i is None or j is None:
-                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} con buses fuera del índice")
+                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} with buses outside the index")
                 continue
 
             typ = trafo.typ_id
             if not typ:
-                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} sin tipo asignado.")
+                app.PrintInfo(f"⚠️ Trafo {trafo.loc_name} unassigned type.")
                 continue
 
             try:
@@ -577,17 +577,17 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                 Ybus[i, j] -= y
                 Ybus[j, i] -= y
             except Exception as e:
-                app.PrintInfo(f"⚠️ Error extrayendo impedancia de trafo {trafo.loc_name}: {str(e)}")
+                app.PrintInfo(f"⚠️ Error extracting transformer impedance {trafo.loc_name}: {str(e)}")
 
-        # ➤ Generadores
+        # ➤ Generators
         for gen in gens:
             bus = gen.bus1
             if not bus:
-                app.PrintInfo(f"⚠️ Generador {gen.loc_name} sin conexión válida")
+                app.PrintInfo(f"⚠️ Generator {gen.loc_name} without a valid connection")
                 continue
             bus_term = bus.cterm
             if not bus_term:
-                app.PrintInfo(f"⚠️ Generador {gen.loc_name} no conectado a nodo")
+                app.PrintInfo(f"⚠️ Generator {gen.loc_name} not connected to node")
                 continue
             i = bus_idx.get(bus_term.loc_name)
             if i is None:
@@ -595,37 +595,37 @@ def ejecutar_positive_completo(output_folder, escenario_num):
 
             typ = gen.typ_id
             if typ and hasattr(typ, "xd1"):
-                # Generador síncrono -> usar parámetros Xd1, Ra
+                # Synchronous generator -> use parameters Xd1, Ra
                 x = typ.xd1
                 r = typ.ra
                 y = z_to_y(r, x)
                 Ybus[i, i] += y
             else:
-                # Generadores estáticos (PVsys, PQ, etc.)
+                # Static generators (PVsys, PQ, etc.)
                 try:
-                    # Obtener potencia activa y reactiva del flujo de carga en el nodo
+                    # Obtain active and reactive power at the node from the load flow
                     P = gen.GetAttribute("n:Pgen:bus1")  # [MW]
                     Q = gen.GetAttribute("n:Qgen:bus1")  # [Mvar]
                 except Exception as e:
-                    app.PrintInfo(f"⚠️ No se pudieron obtener P/Q de {gen.loc_name}: {e}")
+                    app.PrintInfo(f"⚠️ P/Q could not be obtained from {gen.loc_name}: {e}")
                     continue
 
                 if P == 0 and Q == 0:
                     continue
 
-                S = complex(P, Q) / 1000  # convertir a pu con base 1000 MVA si corresponde
+                S = complex(P, Q) / 1000  # Convert to per-unit on a 1000 MVA base, if applicable
                 Ysh = S / (1.0 ** 2)
                 Ybus[i, i] += Ysh.conjugate()
 
-        # ➤ Generadores tipo ElmPvsys
+        # ➤ ElmPvsys-type generators
         for gen in pvsys_gens:
             bus = gen.bus1
             if not bus:
-                app.PrintInfo(f"⚠️ PVsys {gen.loc_name} sin conexión válida")
+                app.PrintInfo(f"⚠️ PVsys {gen.loc_name} without a valid connection")
                 continue
             bus_term = bus.cterm
             if not bus_term:
-                app.PrintInfo(f"⚠️ PVsys {gen.loc_name} no conectado a nodo")
+                app.PrintInfo(f"⚠️ PVsys {gen.loc_name} not connected to node")
                 continue
             i = bus_idx.get(bus_term.loc_name)
             if i is None:
@@ -636,10 +636,10 @@ def ejecutar_positive_completo(output_folder, escenario_num):
             if P == 0 and Q == 0:
                 continue
             S = complex(P, Q) / 1000  # [MVA]
-            Ysh = S / (1.0 ** 2)      # Admitancia en pu (asumiendo V=1.0 pu)
+            Ysh = S / (1.0 ** 2)      # Admittance in p.u. (assuming V = 1.0 p.u.)
             Ybus[i, i] += Ysh.conjugate()
 
-        # ➤ Cargas
+        # ➤ Loads
         for load in loads:
             bus = load.bus1
             if not bus:
@@ -656,16 +656,16 @@ def ejecutar_positive_completo(output_folder, escenario_num):
             Yload = S / (1.0 ** 2)
             Ybus[i, i] += Yload.conjugate()
 
-        # ➤ Exportar Ybus a CSV
+        # ➤ Export Ybus to CSV
         ybus_path = os.path.join(positive_folder, f"Ybus_export.csv")
         with open(ybus_path, mode="w", newline="") as file:
             writer = csv.writer(file)
 
-            # Encabezado con nombres de columnas
+            # Header with column names
             header = ["Bus"] + bus_names
             writer.writerow(header)
 
-            # Escribir cada fila con su nombre de barra y las admitancias complejas
+            # Write each row with its bus name and the complex admittances
             for i in range(n):
                 row = [bus_names[i]]
                 for j in range(n):
@@ -674,35 +674,35 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                     row.append(cell)
                 writer.writerow(row)
 
-        app.PrintInfo(f"📁 Archivo Ybus exportado correctamente a:\n{ybus_path}")
+        app.PrintInfo(f"📁 Ybus file successfully exported to:\n{ybus_path}")
 
-        # ➤ Exportar tensiones y corrientes
-        app.PrintInfo("✅ Exportando resultados de generadores y tensiones de nodos...")
+        # ➤ Export voltages and currents
+        app.PrintInfo("✅ Exporting generator results and node voltages...")
 
-        # Ejecutar flujo de carga
+        # Run load flow
         ldf = app.GetFromStudyCase("ComLdf")
         if not ldf:
-            app.PrintInfo("❌ No se encontró el objeto ComLdf.")
+            app.PrintInfo("❌ The ComLdf object was not found.")
             return False
 
         ldf.iopt_net = 0
         status = ldf.Execute()
         if status != 0:
-            app.PrintInfo("❌ Error al ejecutar el flujo de carga.")
+            app.PrintInfo("❌ Error executing the load flow.")
             return False
 
-        app.PrintInfo("✅ Flujo de carga ejecutado correctamente.")
+        app.PrintInfo("✅ Load flow executed successfully.")
 
-        # 🔹 Generadores
+        # 🔹 Generators
         gen_classes = ["ElmSym", "ElmGenstat", "ElmPvsys", "ElmPvg", "ElmVsccon"]
         generadores = []
         for cls in gen_classes:
             generadores += app.GetCalcRelevantObjects(f"*.{cls}")
 
-        # 🔹 Terminales de nodo
+        # 🔹 Node terminals
         terminales = app.GetCalcRelevantObjects("*.ElmTerm")
 
-        # ➤ Exportar corrientes de generadores
+        # ➤ Export generator currents
         gen_path = os.path.join(positive_folder, f"corrientes_generadores.csv")
         with open(gen_path, mode="w", newline="") as f_gen:
             writer = csv.writer(f_gen, delimiter=";")
@@ -714,9 +714,9 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                     corriente = gen.GetAttribute("m:I:bus1")
                     writer.writerow([name, f"{corriente.real:.4f}+j{corriente.imag:.4f}"])
                 except Exception as e:
-                    app.PrintInfo(f"⚠️ {name} sin corriente medida: {e}")
+                    app.PrintInfo(f"⚠️ {name} no measured current: {e}")
 
-        # ➤ Exportar tensiones desde terminales
+        # ➤ Export voltages from terminals
         term_path = os.path.join(positive_folder, f"tensiones_nodos.csv")
         with open(term_path, mode="w", newline="") as f_bus:
             writer = csv.writer(f_bus, delimiter=";")
@@ -728,9 +728,9 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                     tension = term.GetAttribute("m:u")
                     writer.writerow([name, f"{tension:.4f}"])
                 except Exception as e:
-                    app.PrintInfo(f"⚠️ Terminal {term.loc_name} sin tensión medida: {e}")
+                    app.PrintInfo(f"⚠️ Terminal {term.loc_name} without measured tension: {e}")
 
-        # ➤ Exportar potencias activas de generadores
+        # ➤ Export active power from generators
         pot_path = os.path.join(positive_folder, f"potencias_activas_generadores.csv")
         with open(pot_path, mode="w", newline="") as f_pot:
             writer = csv.writer(f_pot, delimiter=";")
@@ -756,29 +756,29 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                     P_str = f"{P_MW:.4f}".replace(".", ",")
                     writer.writerow([name, gen_type, nodo, P_str])
                 except Exception as e:
-                    app.PrintInfo(f"⚠️ {name} sin atributo pgini: {e}")
+                    app.PrintInfo(f"⚠️ {name} without pgini attribute: {e}")
 
-        # ➤ Ejecutar cortocircuito trifásico y exportar Ikss y Skss
-        app.PrintInfo("⚡ Ejecutando cálculo de cortocircuito trifásico...")
+        # ➤ Perform a three-phase short-circuit analysis and export Ikss and Skss
+        app.PrintInfo("⚡ Performing three-phase short-circuit calculation...")
 
-        # Obtener objeto de cortocircuito
+        # Get short-circuit object
         sc = app.GetFromStudyCase("ComShc")
         if not sc:
-            app.PrintInfo("❌ No se encontró el objeto ComShc en el caso de estudio.")
+            app.PrintInfo("❌ The ComShc object was not found in the case study.")
             return False
 
-        # Configurar para trifásico en todos los nodos
+        # Configure for three-phase at all nodes
         sc.iopt_mde = 1     # 1 = IEC60909
-        #sc.iopt_shc = 3psc     # 1 = simétrico (trifásico)
-        sc.iopt_allbus = 1  # Calcular en todos los nodos
+        #sc.iopt_shc = 3psc     # 1 = simétric (3ph)
+        sc.iopt_allbus = 1  # Calculate at all nodes
 
-        # Ejecutar cálculo
+        # Run calculation
         status = sc.Execute()
         if status != 0:
-            app.PrintInfo("❌ Error al ejecutar el cálculo de cortocircuito.")
+            app.PrintInfo("❌ Error while executing the short-circuit calculation.")
             return False
 
-        app.PrintInfo("✅ Cálculo de cortocircuito trifásico ejecutado correctamente.")
+        app.PrintInfo("✅ Three-phase short-circuit calculation performed correctly.")
 
         # Obtener nodos
         nodos_sc = app.GetCalcRelevantObjects("*.ElmTerm")
@@ -795,18 +795,18 @@ def ejecutar_positive_completo(output_folder, escenario_num):
 
             for nodo in nodos_sc:
                 try:
-                    # Corriente trifásica simétrica inicial en kA
+                    # Initial symmetrical three-phase current in kA
                     ikss = nodo.GetAttribute("m:Ikss")
-                    # Potencia de cortocircuito simétrica inicial en MVA
+                    # Initial symmetrical short-circuit power in MVA
                     skss = nodo.GetAttribute("m:Skss")
 
-                    # Evitar None
+                    # Avoid None
                     if ikss is None:
                         ikss = 0.0
                     if skss is None:
                         skss = 0.0
 
-                    # Formato con coma decimal
+                    # Decimal comma format
                     ikss_str = f"{ikss:.4f}".replace(".", ",")
                     skss_str = f"{skss:.4f}".replace(".", ",")
 
@@ -815,17 +815,17 @@ def ejecutar_positive_completo(output_folder, escenario_num):
                 except Exception as e:
                     app.PrintInfo(f"⚠️ Nodo {nodo.loc_name} sin datos: {e}")
 
-        app.PrintInfo(f"📄 Resultados de cortocircuito exportados en:\n{sc_path}")
-        app.PrintInfo(f"✅ Positive completado para escenario {escenario_num}")
+        app.PrintInfo(f"📄 Exported short circuit results in:\n{sc_path}")
+        app.PrintInfo(f"✅ Positive completed for scenario {escenario_num}")
         return True
 
     except Exception as e:
-        app.PrintError(f"❌ Error durante la ejecución de Positive: {str(e)}")
+        app.PrintError(f"❌ Error during the execution of Positive: {str(e)}")
         import traceback
         app.PrintError(traceback.format_exc())
         return False
 
-######## === FUNCIONES SDSCR INFO INTEGRADAS === #########
+######## === INTEGRATED SDSCR INFO FUNCTIONS === #########
 def get_system_base_mva():
     """Get system base MVA"""
     try:
@@ -993,7 +993,7 @@ def extract_sdscr_network_data():
 
 def save_sdscr_to_csv(network_data, output_folder, escenario_num):
     """Save SDSCR data to CSV files"""
-    # Crear carpeta "SDSCR INFO" dentro de la carpeta del escenario
+    # Create "SDSCR INFO" folder inside the scenario folder
     sdscr_folder = os.path.join(output_folder, "SDSCR INFO")
     os.makedirs(sdscr_folder, exist_ok=True)
     
@@ -1014,7 +1014,7 @@ def ejecutar_sdscr_info_completo(output_folder, escenario_num):
     try:
         app.PrintInfo(f"📋 Ejecutando SDSCR INFO para escenario {escenario_num}")
         
-        # Ejecutar flujo de carga primero
+        # Run load flow first
         if not ejecutar_flujo_carga():
             app.PrintWarn("⚠ No se pudo ejecutar el flujo de carga, los datos SDSCR pueden estar incompletos")
         
@@ -1041,17 +1041,17 @@ def ejecutar_sdscr_info_completo(output_folder, escenario_num):
         app.PrintError(traceback.format_exc())
         return False
 
-######## === FUNCIONES EXPORTZ_PYTHON INTEGRADAS === #########
+######## === INTEGRATED EXPORTZ_PYTHON FUNCTIONS === #########
 def ejecutar_exportz_python_completo(output_folder, escenario_num):
     """Ejecuta la funcionalidad completa de ExportZ_Python"""
     try:
         app.PrintInfo(f"🔌 Ejecutando ExportZ_Python para escenario {escenario_num}")
         
-        # Crear carpeta "ExportZ_Python" dentro de la carpeta del escenario
+        # Create "ExportZ_Python" folder inside the scenario folder
         exportz_folder = os.path.join(output_folder, "ExportZ_Python")
         os.makedirs(exportz_folder, exist_ok=True)
         
-        # Mapeo de av_mode a etiquetas legibles
+        # Mapping of av_mode to readable labels
         av_mode_dict = {
             0: "PV (V fija)",
             1: "PQ (Q fija)",
@@ -1063,7 +1063,7 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
             7: "PQ (cosφ=f(P))"
         }
 
-        # Incluir todos los tipos relevantes de generadores
+        # Include all relevant generator types
         generadores = app.GetProjectFolder("netdat").GetContents("*.ElmGenstat,*.ElmSym,*.ElmPvsys,*.ElmPvg", 1)
 
         if not generadores:
@@ -1072,7 +1072,7 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
         else:
             app.PrintInfo(f"🔍 Generadores encontrados: {len(generadores)}")
 
-            # Archivo de generadores
+            # Generator file
             gen_file = os.path.join(exportz_folder, f"info_generadores_con_Zdevice.csv")
 
             with open(gen_file, mode="w", newline="", encoding="utf-8") as f:
@@ -1087,10 +1087,10 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
                         name = gen.loc_name
                         tipo = gen.GetClassName()
 
-                        # Tipo físico
+                        # Physical type
                         tipo_fisico = "Síncrono" if tipo in ["ElmGenstat", "ElmSym"] else "IBR"
 
-                        # Tipo de control
+                        # Control type
                         if tipo in ["ElmGenstat", "ElmSym"]:
                             tipo_control = "Vtheta"
                         elif tipo in ["ElmPvsys", "ElmPvg"]:
@@ -1101,7 +1101,7 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
                         else:
                             tipo_control = "Desconocido"
 
-                        # Nodo de conexión
+                        # Connection node
                         terminal = gen.bus1.cterm if gen.bus1 and hasattr(gen.bus1, "cterm") else None
                         if terminal and terminal.GetClassName() == "ElmTerm":
                             nodo = terminal.loc_name
@@ -1110,7 +1110,7 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
                             nodo = "N/A"
                             Vbase_kV = None
 
-                        # Potencia activa
+                        # Active power
                         P = gen.pgini
                         if tipo in ["ElmPvsys", "ElmPvg"]:
                             P_MW = P / 1000.0
@@ -1123,7 +1123,7 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
                         else:
                             Zdevice = None
 
-                        # Escribir fila CSV
+                        # Write CSV row
                         writer.writerow([
                             name,
                             tipo,
@@ -1142,7 +1142,7 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
 
             app.PrintInfo(f"✅ Archivo generadores generado: {gen_file}")
 
-        # ➤ Exportar información de cargas
+        # ➤ Export load information
         cargas_file = os.path.join(exportz_folder, f"info_cargas.csv")
         cargas = app.GetProjectFolder("netdat").GetContents("*.ElmLod", 1)
 
@@ -1164,9 +1164,9 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
                         else:
                             nodo = "N/A"
 
-                        # Potencias en MW y MVAr
-                        P_MW = carga.plini / 1000.0  # plini está en kW
-                        Q_Mvar = carga.qlini / 1000.0  # qlini está en kVAr
+                        # Powers in MW and MVAr
+                        P_MW = carga.plini / 1000.0  # plini is in kW
+                        Q_Mvar = carga.qlini / 1000.0  # qlini is in kVAr
 
                         writer.writerow([
                             name,
@@ -1191,13 +1191,13 @@ def ejecutar_exportz_python_completo(output_folder, escenario_num):
         app.PrintError(traceback.format_exc())
         return False
 
-# === FUNCIONES PARA CÁLCULO DE CORRIENTES DE CORTOCIRCUITO (TU CÓDIGO) ===
+# === FUNCTIONS FOR SHORT-CIRCUIT CURRENT CALCULATION (YOUR CODE) ===
 def obtener_bus_conexion_generador(app, gen_obj, gen_name):
-    """Obtiene el bus de conexión del generador usando métodos más robustos"""
+    """Gets the generator connection bus using more robust methods"""
     try:
         app.PrintInfo(f"  🔍 Buscando bus de conexión para {gen_name}...")
         
-        # Método 1: Buscar a través de cubículos (método más confiable en PowerFactory)
+        # Method 1: Search through cubicles (most reliable method in PowerFactory)
         try:
             cubicle = gen_obj.GetCubicle()
             if cubicle:
@@ -1208,9 +1208,9 @@ def obtener_bus_conexion_generador(app, gen_obj, gen_name):
         except Exception as e:
             app.PrintInfo(f"  ℹ️ Método cubicle falló: {e}")
         
-        # Método 2: Buscar terminales conectadas directamente
+        # Method 2: Search for directly connected terminals
         try:
-            # Buscar todos los terminales en el mismo contenedor
+            # Search for all terminals in the same container
             terminales = app.GetCalcRelevantObjects(f"{gen_obj.loc_name}*.ElmTerm")
             for term in terminales:
                 if hasattr(term, 'uknom'):
@@ -1219,7 +1219,7 @@ def obtener_bus_conexion_generador(app, gen_obj, gen_name):
         except Exception as e:
             app.PrintInfo(f"  ℹ️ Método terminales falló: {e}")
         
-        # Método 3: Buscar por conexión física (bus1)
+        # Method 3: Search by physical connection (bus1)
         try:
             if hasattr(gen_obj, 'bus1') and gen_obj.bus1:
                 bus = gen_obj.bus1
@@ -1228,7 +1228,7 @@ def obtener_bus_conexion_generador(app, gen_obj, gen_name):
         except Exception as e:
             app.PrintInfo(f"  ℹ️ Método bus1 falló: {e}")
         
-        # Método 4: Buscar en el contenedor padre
+        # Method 4: Search in the parent container
         try:
             parent = gen_obj.GetParent()
             if parent and hasattr(parent, 'uknom'):
@@ -1237,9 +1237,9 @@ def obtener_bus_conexion_generador(app, gen_obj, gen_name):
         except Exception as e:
             app.PrintInfo(f"  ℹ️ Método parent falló: {e}")
         
-        # Método 5: Buscar buses cercanos por nombre
+        # Method 5: Search for nearby buses by name
         try:
-            # Buscar buses que puedan estar conectados por nombre similar
+            # Search for buses that may be connected by similar name
             all_buses = app.GetCalcRelevantObjects("*.ElmTerm")
             gen_name_clean = gen_name.replace('PV', '').replace('GEN', '').strip()
             
@@ -1262,15 +1262,15 @@ def obtener_bus_conexion_generador(app, gen_obj, gen_name):
         return None
 
 def obtener_voltaje_del_bus(app, bus, gen_name):
-    """Obtiene el voltaje del bus usando múltiples métodos"""
+    """Gets the bus voltage using multiple methods"""
     try:
-        # Método 1: uknom directo
+        # Method 1: Direct uknom
         if hasattr(bus, 'uknom'):
             voltaje = bus.uknom
             app.PrintInfo(f"  ⚡ {gen_name}: Voltaje nominal = {voltaje} kV")
             return voltaje
         
-        # Método 2: GetAttribute
+        # Method 2: GetAttribute
         try:
             voltaje = bus.GetAttribute('uknom')
             app.PrintInfo(f"  ⚡ {gen_name}: Voltaje (GetAttribute) = {voltaje} kV")
@@ -1278,7 +1278,7 @@ def obtener_voltaje_del_bus(app, bus, gen_name):
         except:
             pass
         
-        # Método 3: Buscar en el tipo de bus
+        # Method 3: Search in the bus type
         try:
             if hasattr(bus, 'typ_id') and bus.typ_id:
                 bus_type = bus.typ_id
@@ -1289,7 +1289,7 @@ def obtener_voltaje_del_bus(app, bus, gen_name):
         except:
             pass
         
-        # Método 4: Buscar propiedades del bus
+        # Method 4: Search bus properties
         try:
             props = bus.GetProperties()
             for prop in props:
@@ -1312,21 +1312,21 @@ def obtener_voltaje_del_bus(app, bus, gen_name):
         return None
 
 def determinar_voltaje_por_ubicacion(app, gen_obj, gen_name):
-    """Determina el voltaje basado en la ubicación y configuración del generador"""
+    """Determines the voltage based on the generator location and configuration"""
     try:
         app.PrintInfo(f"  🔍 Determinando voltaje por ubicación para {gen_name}...")
         
-        # Verificar si es un sistema de baja tensión típico
+        # Check whether it is a typical low-voltage system
         potencia_kw = gen_obj.pgini
         
-        # Para sistemas PV, la mayoría están en baja tensión (< 1000V)
-        if potencia_kw <= 1000:  # Menos de 1 MW
+        # For PV systems, most are at low voltage (< 1000 V)
+        if potencia_kw <= 1000:  # Less than 1 MW
             voltaje = 0.48
             app.PrintInfo(f"  ⚡ {gen_name}: Voltaje determinado por potencia ({potencia_kw} kW) = 0.48 kV")
-        elif potencia_kw <= 10000:  # Entre 1 MW y 10 MW
+        elif potencia_kw <= 10000:  # Between 1 MW and 10 MW
             voltaje = 13.8
             app.PrintInfo(f"  ⚡ {gen_name}: Voltaje determinado por potencia ({potencia_kw} kW) = 13.8 kV")
-        else:  # Más de 10 MW
+        else:  # More than 10 MW
             voltaje = 34.5
             app.PrintInfo(f"  ⚡ {gen_name}: Voltaje determinado por potencia ({potencia_kw} kW) = 34.5 kV")
         
@@ -1337,7 +1337,7 @@ def determinar_voltaje_por_ubicacion(app, gen_obj, gen_name):
         return 0.48
 
 def calcular_corrientes_cortocircuito(gen_objects):
-    """Calcula corriente nominal y corrientes de cortocircuito para los generadores no síncronos"""
+    """Calculates rated current and short-circuit currents for non-synchronous generators"""
     try:
         app.PrintInfo("🔧 Calculando corrientes de cortocircuito...")
         
@@ -1345,30 +1345,30 @@ def calcular_corrientes_cortocircuito(gen_objects):
         
         for gen_name, gen_obj in gen_objects.items():
             try:
-                # Obtener datos del generador
-                p_nuevo_kw = gen_obj.pgini  # Potencia activa en kW
+                # Get generator data
+                p_nuevo_kw = gen_obj.pgini  # Active power en kW
                 
-                # Buscar el bus de conexión
+                # Find the connection bus
                 bus_conexion = obtener_bus_conexion_generador(app, gen_obj, gen_name)
                 voltaje_kv = None
                 
                 if bus_conexion:
-                    # Obtener voltaje del bus
+                    # Get bus voltage
                     voltaje_kv = obtener_voltaje_del_bus(app, bus_conexion, gen_name)
                 
-                # Si no se pudo obtener el voltaje del bus, usar método alternativo
+                # If the bus voltage could not be obtained, use an alternative method
                 if not voltaje_kv:
                     voltaje_kv = determinar_voltaje_por_ubicacion(app, gen_obj, gen_name)
                     app.PrintInfo(f"  ℹ️ {gen_name}: Usando voltaje determinado por ubicación")
                 
-                # Calcular potencia aparente (asumiendo factor de potencia 0.9)
+                # Calculate apparent power (assuming a 0.9 power factor)
                 factor_potencia = 0.9
                 s_kva = p_nuevo_kw / factor_potencia  # kVA
                 
-                # Calcular corriente nominal (I = S / (√3 * V))
+                # Calculate rated current (I = S / (√3 * V))
                 i_nominal = s_kva / (1.732 * voltaje_kv)  # kA (√3 ≈ 1.732)
                 
-                # Calcular corriente de cortocircuito (Icc = I * 1.2)
+                # Calculate short-circuit current (Icc = I * 1.2)
                 i_cc = i_nominal * 1.2  # kA
                 
                 app.PrintInfo(f"  📊 {gen_name}:")
@@ -1378,7 +1378,7 @@ def calcular_corrientes_cortocircuito(gen_objects):
                 app.PrintInfo(f"    - Corriente nominal = {i_nominal:.3f} kA")
                 app.PrintInfo(f"    - Corriente cortocircuito = {i_cc:.3f} kA")
                 
-                # Guardar valores calculados
+                # Save calculated values
                 corrientes_calculadas[gen_name] = {
                     'i_nominal': i_nominal,
                     'i_cc': i_cc,
@@ -1399,7 +1399,7 @@ def calcular_corrientes_cortocircuito(gen_objects):
         return {}
 
 def actualizar_corrientes_cortocircuito(gen_objects, corrientes_calculadas):
-    """Actualiza las corrientes de cortocircuito en los generadores"""
+    """Updates the short-circuit currents in the generators"""
     try:
         app.PrintInfo("🔄 Actualizando corrientes de cortocircuito en los generadores...")
         
@@ -1411,15 +1411,15 @@ def actualizar_corrientes_cortocircuito(gen_objects, corrientes_calculadas):
                     datos_corriente = corrientes_calculadas[gen_name]
                     i_cc_nuevo = datos_corriente['i_cc']
                     
-                    # Actualizar las tres componentes de corriente de cortocircuito
+                    # Update the three short-circuit current components
                     variables_actualizar = ['e:Ikss3PF', 'e:Ikss2PF', 'e:Ikss1PF']
                     
                     for variable in variables_actualizar:
                         try:
-                            # Obtener valor original
+                            # Get original value
                             valor_original = gen_obj.GetAttribute(variable)
                             
-                            # Establecer nuevo valor
+                            # Set new value
                             gen_obj.SetAttribute(variable, i_cc_nuevo)
                             
                             app.PrintInfo(f"  ✅ {gen_name}: {variable} = {i_cc_nuevo:.3f} kA (original: {valor_original:.3f} kA)")
@@ -1442,7 +1442,7 @@ def actualizar_corrientes_cortocircuito(gen_objects, corrientes_calculadas):
         app.PrintWarn(f"⚠ Error actualizando corrientes: {e}")
         return False
 
-# === LECTURA DEL EXCEL ===
+# === READ EXCEL FILE ===
 try:
     df = pd.read_excel(excel_path)
     app.PrintInfo(f"Archivo leído correctamente: {excel_path}")
@@ -1457,7 +1457,7 @@ if df.empty:
 generadores = df.columns.tolist()
 app.PrintInfo(f"Generadores detectados: {', '.join(generadores)}")
 
-# === BUSCAR SISTEMAS PV ===
+# === FIND PV SYSTEMS ===
 gen_objects = {}
 for gen_name in generadores:
     gen = app.GetCalcRelevantObjects(f"{gen_name}.ElmPvsys")
@@ -1470,17 +1470,17 @@ if not gen_objects:
     app.PrintWarn("No se encontró ningún sistema PV válido. Verifique los nombres en el Excel.")
     raise SystemExit
 
-# === GUARDAR VALORES ORIGINALES ===
+# === SAVE ORIGINAL VALUES ===
 pot_originales = {}
 corrientes_originales = {}
 
 for gen_name, gen_obj in gen_objects.items():
     try:
-        # Guardar potencia original
+        # Save original power
         pot_originales[gen_name] = float(gen_obj.pgini)
         app.PrintInfo(f"Potencia original de {gen_name}: {pot_originales[gen_name]:.1f} kW")
         
-        # Guardar corrientes originales
+        # Save original currents
         corrientes_originales[gen_name] = {}
         variables_corriente = ['e:Ikss3PF', 'e:Ikss2PF', 'e:Ikss1PF']
         
@@ -1496,18 +1496,18 @@ for gen_name, gen_obj in gen_objects.items():
     except Exception as e:
         app.PrintWarn(f"No se pudieron leer los valores originales de {gen_name}: {e}")
 
-# === CAMBIO DE POTENCIAS POR ESCENARIO ===
+# === CHANGE POWER VALUES BY SCENARIO ===
 for i, row in df.iterrows():
     escenario_num = i + 1
     app.PrintPlain(f"\n--- Escenario {escenario_num} ---")
     success = True
 
-    # Carpeta de salida
+    # Output folder
     output_folder = os.path.join(base_output_path, f"Escenario_{escenario_num}")
     os.makedirs(output_folder, exist_ok=True)
     app.PrintInfo(f"Carpeta creada para resultados: {output_folder}")
 
-    # Cambiar potencias
+    # Change power values
     for gen_name, gen_obj in gen_objects.items():
         try:
             p_mw = float(row[gen_name])
@@ -1521,7 +1521,7 @@ for i, row in df.iterrows():
     if success:
         app.PrintPlain(f"✅ Cambio exitoso para {', '.join(gen_objects.keys())}")
         
-        # === 2. CALCULAR Y ACTUALIZAR CORRIENTES DE CORTOCIRCUITO ===
+        # === 2. CALCULATE AND UPDATE SHORT-CIRCUIT CURRENTS ===
         app.PrintPlain("→ Calculando y actualizando corrientes de cortocircuito...")
         corrientes_calculadas = calcular_corrientes_cortocircuito(gen_objects)
         
@@ -1534,26 +1534,26 @@ for i, row in df.iterrows():
         else:
             app.PrintWarn("❌ No se pudieron calcular las corrientes de cortocircuito")
         
-        # === EJECUTAR DATOS GSIM COMPLETO ===
+        # === RUN COMPLETE GSIM DATA ===
         app.PrintPlain("→ Ejecutando análisis completo Datos GSIM...")
         ejecutar_datos_gsim_completo(escenario_num, output_folder)
         
-        # === EJECUTAR POSITIVE COMPLETO ===
+        # === RUN COMPLETE POSITIVE ===
         app.PrintPlain("→ Ejecutando análisis completo Positive...")
         ejecutar_positive_completo(output_folder, escenario_num)
         
-        # === EJECUTAR SDSCR INFO COMPLETO ===
+        # === RUN COMPLETE SDSCR INFO ===
         app.PrintPlain("→ Ejecutando análisis completo SDSCR INFO...")
         ejecutar_sdscr_info_completo(output_folder, escenario_num)
         
-        # === EJECUTAR EXPORTZ_PYTHON COMPLETO ===
+        # === RUN COMPLETE EXPORTZ_PYTHON ===
         app.PrintPlain("→ Ejecutando análisis completo ExportZ_Python...")
         ejecutar_exportz_python_completo(output_folder, escenario_num)
             
     else:
         app.PrintWarn(f"❌ Error al aplicar los cambios del escenario {escenario_num}")
 
-# === RESTAURAR POTENCIAS ORIGINALES ===
+# === RESTORE ORIGINAL POWER VALUES ===
 app.PrintPlain("\n--- Restaurando potencias originales ---")
 for gen_name, gen_obj in gen_objects.items():
     try:
@@ -1564,7 +1564,7 @@ for gen_name, gen_obj in gen_objects.items():
     except Exception as e:
         app.PrintWarn(f"  ⚠ Error al restaurar la potencia de {gen_name}: {e}")
 
-# Restaurar corrientes originales
+# Restore original currents
 app.PrintPlain("→ Restaurando corrientes de cortocircuito originales...")
 for gen_name, gen_obj in gen_objects.items():
     try:
