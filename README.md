@@ -874,3 +874,358 @@ Normalized graphs/
 ```
 
 donde se almacenan las figuras generadas.
+
+# Sistemas de prueba
+
+La metodología se implementa utilizando dos sistemas de prueba estandarizados de la literatura: el **IEEE 9-bus system** y el **IEEE 39-bus system**. Estos sistemas permiten evaluar el comportamiento de los indicadores de fortaleza de red bajo diferentes condiciones de operación y niveles de integración de generación basada en inversores (IBR).
+
+Los archivos asociados a los sistemas de prueba se encuentran en:
+
+```text
+data/example/
+├── IEEE9/
+└── IEEE39/
+```
+
+## IEEE 9-bus system
+
+El sistema IEEE de 9 nodos se utiliza como un sistema de prueba de menor tamaño para verificar el funcionamiento de la metodología y analizar la interacción entre fuentes IBR eléctricamente cercanas.
+
+Sobre este sistema se consideran dos fuentes de generación basada en inversores, denominadas **PV1** y **PV2**, ubicadas en los nodos seleccionados mediante el procedimiento de cercania eléctrica basado en la matriz `Zbus`.
+
+Los estudios consideran dos condiciones de factor de potencia:
+
+* `CAP`: operación con factor de potencia capacitivo.
+* `IND`: operación con factor de potencia inductivo.
+
+Para cada condición se analizan seis escenarios de operación:
+
+```text
+IEEE9/
+├── CAP/
+│   ├── Escenario_1
+│   ├── Escenario_2
+│   ├── Escenario_3
+│   ├── Escenario_4
+│   ├── Escenario_5
+│   └── Escenario_6
+│
+└── IND/
+    ├── Escenario_1
+    ├── Escenario_2
+    ├── Escenario_3
+    ├── Escenario_4
+    ├── Escenario_5
+    └── Escenario_6
+```
+
+## IEEE 39-bus system
+
+El sistema IEEE de 39 nodos se utiliza como un sistema de prueba de mayor tamaño para evaluar la metodología en una red con una estructura eléctrica más compleja.
+
+Al igual que para el sistema IEEE de 9 nodos, se incorporan dos fuentes IBR, **PV1** y **PV2**, en nodos seleccionados a partir del análisis de cercania eléctrica mediante `Zbus`.
+
+Se consideran las mismas dos condiciones de factor de potencia:
+
+* `CAP`: operación con factor de potencia capacitivo.
+* `IND`: operación con factor de potencia inductivo.
+
+Cada condición contiene seis escenarios de operación:
+
+```text
+IEEE39/
+├── CAP/
+│   ├── Escenario_1
+│   ├── Escenario_2
+│   ├── Escenario_3
+│   ├── Escenario_4
+│   ├── Escenario_5
+│   └── Escenario_6
+│
+└── IND/
+    ├── Escenario_1
+    ├── Escenario_2
+    ├── Escenario_3
+    ├── Escenario_4
+    ├── Escenario_5
+    └── Escenario_6
+```
+
+## Organización de los casos de estudio
+
+En conjunto, los sistemas de prueba permiten evaluar:
+
+| Sistema       | Condición | Escenarios |
+| ------------- | --------- | ---------: |
+| IEEE 9 nodos  | CAP       |          6 |
+| IEEE 9 nodos  | IND       |          6 |
+| IEEE 39 nodos | CAP       |          6 |
+| IEEE 39 nodos | IND       |          6 |
+
+Por lo tanto, la metodología considera **24 condiciones de escenario** entre los dos sistemas de prueba y las dos condiciones de factor de potencia.
+
+La información asociada a los escenarios se encuentra en:
+
+```text
+data/scenarios/
+```
+
+mientras que los datos intermedios y resultados generados durante el procesamiento se almacenan en:
+
+```text
+data/results/
+```
+
+y los resultados finales y figuras en:
+
+```text
+results/
+```
+
+Esta organización permite ejecutar y analizar cada sistema de prueba de manera independiente, manteniendo separados los escenarios correspondientes a las condiciones capacitivas e inductivas.
+
+# Datos de entrada
+
+La metodología utiliza diferentes archivos de datos durante las etapas de modelamiento, preprocesamiento, definición de escenarios y cálculo de indicadores. Algunos de estos archivos corresponden a **datos de entrada definidos previamente**, mientras que otros son **archivos intermedios generados automáticamente durante la ejecución**.
+
+Los archivos se organizan principalmente en los directorios:
+
+```text id="d2m1l9"
+data/example/
+data/scenarios/
+data/results/
+```
+
+## 1. Datos de los sistemas de prueba
+
+Los archivos de entrada correspondientes a los sistemas IEEE de 9 y 39 nodos se encuentran en:
+
+```text id="1kq6qg"
+data/example/
+├── IEEE9/
+└── IEEE39/
+```
+
+Estos directorios contienen la información necesaria para representar cada sistema de prueba y constituyen el punto de partida del flujo de procesamiento.
+
+A partir del modelo implementado en DIgSILENT PowerFactory, se genera la información eléctrica que posteriormente será procesada mediante Python.
+
+## 2. Archivos exportados desde PowerFactory
+
+El script:
+
+```text id="f1b5z8"
+export_network_data.py
+```
+
+extrae desde DIgSILENT PowerFactory la información eléctrica requerida para el procesamiento posterior.
+
+Entre los archivos generados se encuentran:
+
+| Archivo                             | Descripción                                                             |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| `Ybus_export.csv`                   | Matriz de admitancias nodales utilizada para calcular la matriz `Zbus`. |
+| `corrientes_generadores.csv`        | Información de las corrientes asociadas a los generadores.              |
+| `tensiones_nodos.csv`               | Tensiones de los nodos del sistema.                                     |
+| `potencias_activas_generadores.csv` | Potencias activas de los generadores.                                   |
+| `cortocircuito_trifasico.csv`       | Información asociada al cálculo de cortocircuito trifásico.             |
+
+Estos archivos son almacenados en el directorio correspondiente al sistema de prueba dentro de:
+
+```text id="n5z8tq"
+data/example/
+```
+
+El archivo `Ybus_export.csv` constituye la entrada principal para el cálculo de la matriz de impedancias nodales.
+
+## 3. Matriz de impedancias `Zbus`
+
+A partir de:
+
+```text id="g0m6tz"
+Ybus_export.csv
+```
+
+se ejecuta el script:
+
+```text id="8byqf5"
+calculate_zbus.py
+```
+
+El script calcula la matriz de impedancias nodales `Zbus` y exporta el resultado en el mismo directorio del sistema de prueba.
+
+La matriz `Zbus` es posteriormente utilizada por:
+
+```text id="m4h5jd"
+find_electrically_close_nodes.py
+```
+
+para determinar la proximidad eléctrica entre los nodos de la red.
+
+## 4. Pares de nodos eléctricamente cercanos
+
+El script:
+
+```text id="h0kn6s"
+find_electrically_close_nodes.py
+```
+
+utiliza la matriz `Zbus` para identificar pares de nodos eléctricamente cercanos.
+
+Como resultado se genera:
+
+```text id="e2t4y7"
+pares_nodos_cercanos.csv
+```
+
+Este archivo contiene las parejas de nodos obtenidas mediante el criterio de proximidad eléctrica empleado por la metodología.
+
+El usuario debe revisar este archivo y seleccionar los dos nodos que serán utilizados posteriormente para conectar las fuentes IBR.
+
+---
+
+## 5. Archivo de definición de escenarios
+
+Una vez seleccionados los nodos y realizados los barridos de potencia, los puntos de operación seleccionados se registran en:
+
+```text id="f7v2k1"
+Potencias_Comp_PV1_PV2.xlsx
+```
+
+Este archivo se utiliza para definir las combinaciones de potencia de **PV1** y **PV2** correspondientes a los diferentes escenarios de estudio.
+
+Los escenarios se organizan según:
+
+```text id="m5r7q3"
+data/scenarios/
+├── IEEE9/
+│   ├── CAP/
+│   └── IND/
+└── IEEE39/
+    ├── CAP/
+    └── IND/
+```
+
+Para cada condición se consideran seis escenarios:
+
+```text id="j2v8s4"
+Escenario_1
+Escenario_2
+Escenario_3
+Escenario_4
+Escenario_5
+Escenario_6
+```
+
+La información contenida en este archivo es posteriormente utilizada por `extract_scenario_data.py`.
+
+---
+
+## 6. Datos de cada escenario
+
+El script:
+
+```text id="q9s6w2"
+extract_scenario_data.py
+```
+
+lee las condiciones definidas en `Potencias_Comp_PV1_PV2.xlsx` y genera la información eléctrica necesaria para el cálculo de los indicadores.
+
+Los datos generados se almacenan en:
+
+```text id="v3c7n1"
+data/results/
+```
+
+manteniendo la organización por:
+
+```text id="x6m4p8"
+Sistema de prueba
+    └── Factor de potencia
+            └── Escenario
+```
+
+Dentro de cada escenario se generan diferentes grupos de información utilizados por los scripts de cálculo de indicadores.
+
+Entre ellos se encuentran directorios relacionados con:
+
+```text id="r8k2d5"
+Datos GSIM/
+ExportZ_Python/
+Informacion SCR/
+Positive/
+SDSCR INFO/
+```
+
+Estos archivos constituyen las entradas utilizadas posteriormente por `calculate_indicators.py`.
+
+---
+
+## 7. Datos utilizados para el cálculo de indicadores
+
+El script:
+
+```text id="w4p9c6"
+calculate_indicators.py
+```
+
+utiliza la información generada para cada escenario y calcula los diferentes indicadores de fortaleza de red considerados en el estudio.
+
+Los resultados correspondientes a cada escenario se almacenan en la estructura de:
+
+```text id="u7n3x5"
+data/results/
+```
+
+Estos resultados constituyen posteriormente la entrada para los scripts de análisis y visualización.
+
+---
+
+## 8. Archivos utilizados para la generación de resultados
+
+Los scripts de visualización utilizan los resultados de los indicadores calculados para generar las figuras correspondientes.
+
+En particular:
+
+```text id="e1r5k9"
+Scenario Comparative.py
+```
+
+utiliza los resultados de los indicadores para generar las gráficas comparativas por escenario.
+
+Posteriormente:
+
+```text id="c6m8v2"
+Indicator Comparative.py
+```
+
+utiliza los mismos resultados para realizar la normalización de los indicadores y generar las gráficas comparativas normalizadas.
+
+Los resultados finales se almacenan en:
+
+```text id="p4q7s1"
+results/
+```
+
+organizados por sistema de prueba y condición de factor de potencia.
+
+---
+
+## Resumen de los archivos principales
+
+La siguiente tabla resume los principales archivos utilizados durante el flujo de ejecución:
+
+| Archivo                       | Generado por                                | Utilizado por                      | Función                                               |
+| ----------------------------- | ------------------------------------------- | ---------------------------------- | ----------------------------------------------------- |
+| `Ybus_export.csv`             | `export_network_data.py`                    | `calculate_zbus.py`                | Matriz de admitancias nodales.                        |
+| `Zbus`                        | `calculate_zbus.py`                         | `find_electrically_close_nodes.py` | Matriz de impedancias nodales.                        |
+| `pares_nodos_cercanos.csv`    | `find_electrically_close_nodes.py`          | Usuario                            | Identificación de nodos eléctricamente cercanos.      |
+| `boundary_PV1_PV2.csv`        | `Power Sweep IND.py` / `Power Sweep CAP.py` | Usuario                            | Datos de la frontera de operación.                    |
+| `boundary_plot_PV1_PV2.png`   | `Power Sweep IND.py` / `Power Sweep CAP.py` | Usuario                            | Visualización de la frontera de operación.            |
+| `Potencias_Comp_PV1_PV2.xlsx` | Usuario                                     | `extract_scenario_data.py`         | Definición de los puntos operativos y escenarios.     |
+| Datos por escenario           | `extract_scenario_data.py`                  | `calculate_indicators.py`          | Información eléctrica para el cálculo de indicadores. |
+| Resultados de indicadores     | `calculate_indicators.py`                   | Scripts de visualización           | Valores de los indicadores para cada escenario.       |
+| Gráficas comparativas         | `Scenario Comparative.py`                   | Usuario / artículo                 | Comparación de indicadores por escenario.             |
+| Gráficas normalizadas         | `Indicator Comparative.py`                  | Usuario / artículo                 | Comparación normalizada de los indicadores.           |
+
+> **Nota:** Los archivos generados durante el procesamiento no deben modificarse manualmente, excepto aquellos cuya edición se indique explícitamente en el procedimiento de ejecución, como `Potencias_Comp_PV1_PV2.xlsx`.
