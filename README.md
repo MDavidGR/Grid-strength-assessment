@@ -1,16 +1,16 @@
-# Introducción
+# Introduction
 
-Este repositorio está asociado al artículo de investigación sobre la evaluación de la **fortaleza de red (Grid Strength)** en sistemas eléctricos de transmisión con alta penetración de **generación basada en inversores (Inverter-Based Resources, IBR)**.
+This repository is associated with the research article on the assessment of **Grid Strength** in electrical transmission systems with high penetration of **Inverter-Based Resources (IBR)**.
 
-El repositorio contiene los **códigos, archivos de entrada, datos de configuración y estructura de directorios** necesarios para implementar y reproducir la metodología propuesta en el artículo. La metodología integra **DIgSILENT PowerFactory** y **Python** para el modelado del sistema eléctrico, el procesamiento de los datos y el cálculo de diferentes indicadores de fortaleza de red.
+The repository contains the **code, input files, configuration data, and directory structure** required to implement and reproduce the methodology proposed in the article. The methodology integrates **DIgSILENT PowerFactory** and **Python** for power system modeling, data processing, and calculation of different grid strength indicators.
 
-La metodología se aplica y valida utilizando los sistemas de prueba **IEEE de 9 y 39 nodos**, considerando diferentes escenarios de operación y condiciones de penetración de generación basada en inversores.
+The methodology is applied and validated using the **IEEE 9-bus and 39-bus test systems**, considering different operating scenarios and IBR penetration conditions.
 
-# Estructura del repositorio
+# Repository Structure
 
-El repositorio se organiza en multiples directorios de acuerdo con la función que desempeñan dentro de la metodología. Esta estructura permite separar los **archivos de entrada**, los **códigos de procesamiento**, los **modelos de DIgSILENT PowerFactory** y los **resultados generados**, facilitando la ejecución y reproducción de los resultados.
+The repository is organized into multiple directories according to the function they perform within the methodology. This structure allows **input files**, **processing code**, **DIgSILENT PowerFactory models**, and **generated results** to be separated, facilitating the execution and reproduction of the results.
 
-La estructura principal del repositorio es la siguiente:
+The main repository structure is as follows:
 
 ```text
 Grid-strength-assessment/
@@ -51,15 +51,15 @@ Grid-strength-assessment/
 └── README.md
 ```
 
-## Descripción de los directorios
+## Directory Description
 
 ### `data/`
 
-Contiene los datos utilizados durante las diferentes etapas de la metodología, incluyendo los archivos de entrada, la definición de escenarios y los resultados intermedios generados durante los cálculos.
+Contains the data used throughout the different stages of the methodology, including input files, scenario definitions, and intermediate results generated during the calculations.
 
 #### `data/example/`
 
-Contiene los archivos de entrada asociados a los sistemas de prueba **IEEE de 9 y 39 nodos**. Estos archivos constituyen la información de partida necesaria para ejecutar los diferentes procesos de análisis.
+Contains the input files associated with the **IEEE 9-bus and 39-bus test systems**. These files constitute the initial information required to execute the different analysis processes.
 
 ```text
 data/example/
@@ -69,12 +69,12 @@ data/example/
 
 #### `data/scenarios/`
 
-Contiene la definición de los escenarios utilizados para evaluar la fortaleza de red. Los escenarios se organizan según el sistema de prueba y el tipo de factor de potencia considerado:
+Contains the definition of the scenarios used to assess grid strength. The scenarios are organized according to the test system and the power factor condition considered:
 
-* `CAP/`: escenarios con comportamiento **capacitivo**.
-* `IND/`: escenarios con comportamiento **inductivo**.
+* `CAP/`: scenarios with **capacitive** behavior.
+* `IND/`: scenarios with **inductive** behavior.
 
-Cada uno de estos directorios contiene los escenarios de prueba correspondientes (`Escenario_1` a `Escenario_6`).
+Each of these directories contains the corresponding test scenarios (`Escenario_1` to `Escenario_6`).
 
 ```text
 data/scenarios/
@@ -88,9 +88,9 @@ data/scenarios/
 
 #### `data/results/`
 
-Contiene los **resultados intermedios y datos generados durante el primer procesamiento** de los escenarios. Estos archivos incluyen, entre otros, información utilizada para el cálculo de los diferentes indicadores de fortaleza de red, exportaciones de impedancias y resultados asociados a los análisis realizados en Python.
+Contains the **intermediate results and data generated during the initial processing** of the scenarios. These files include, among others, information used to calculate the different grid strength indicators, impedance exports, and results associated with the analyses performed in Python.
 
-Los resultados se organizan por sistema de prueba, resultados de barrido de potencia por tipo de generación y el resultado de la extracción de información basica para los indicadores por escenario planteado.
+The results are organized by test system, power sweep results according to the generation type, and the basic information extracted for the indicators for each defined scenario.
 
 ```text
 data/results/
@@ -106,35 +106,35 @@ data/results/
     └── IEEE39I/
 ```
 
-Dentro de los directorios de cada escenario se encuentran subdirectorios específicos para los distintos tipos de información generada, tales como:
+Within the directories corresponding to each scenario, specific subdirectories are included for the different types of generated information, such as:
 
-* `Datos GSIM/`: datos utilizados para el cálculo del **Grid Strength Impedance Metric (GSIM)**.
-* `ExportZ_Python/`: archivos asociados a la informacion de cargas e impedancias de los generadores.
-* `Informacion SCR/`: información utilizada para el cálculo de indicadores basados en **Short Circuit Ratio (SCR)**.
-* `Positive/`: resultados correspondientes a la informacion base de la red (generadores, nodos, transformadores, corrientes de cortocircuito, Ybus, etc.).
-* `SDSCR INFO/`: información utilizada en el cálculo del **SDSCR**.
+* `Datos GSIM/`: data used to calculate the **Grid Strength Impedance Metric (GSIM)**.
+* `ExportZ_Python/`: files associated with load and generator impedance information.
+* `Informacion SCR/`: information used to calculate indicators based on **Short Circuit Ratio (SCR)**.
+* `Positive/`: results corresponding to the base network information (generators, buses, transformers, short-circuit currents, Ybus, etc.).
+* `SDSCR INFO/`: information used to calculate the **SDSCR**.
 
 ### `powerfactory/`
 
-Contiene los archivos asociados a **DIgSILENT PowerFactory** utilizados en el desarrollo de la metodología. En este directorio se incluyen los scripts y archivos necesarios para realizar la ejecucion de análisis de la red y exportar la información requerida por los scripts de Python.
+Contains the files associated with **DIgSILENT PowerFactory** used in the development of the methodology. This directory includes the scripts and files required to execute network analyses and export the information required by the Python scripts.
 
 ### `python/`
 
-Contiene los scripts desarrollados en **Python**. Los códigos se encuentran organizados de acuerdo con la etapa del procesamiento en la que son utilizados:
+Contains the scripts developed in **Python**. The code is organized according to the processing stage in which it is used:
 
-| Directorio       | Función                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| `preprocessing/` | Preparación, organización y procesamiento inicial de los datos de entrada.                    |
-| `indicators/`    | Cálculo de los indicadores utilizados para evaluar la fortaleza de red.                       |
-| `visualization/` | Generación de gráficos y representaciones utilizadas para analizar y comparar los resultados. |
+| Directory        | Function                                                                         |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `preprocessing/` | Initial preparation, organization, and processing of input data.                 |
+| `indicators/`    | Calculation of the indicators used to assess grid strength.                      |
+| `visualization/` | Generation of plots and representations used to analyze and compare the results. |
 
-Esta separación permite mantener independientes las diferentes etapas del flujo de procesamiento y facilita la reutilización de los scripts.
+This separation keeps the different stages of the processing workflow independent and facilitates script reuse.
 
 ### `results/`
 
-Contiene los **resultados finales y figuras generadas para el análisis de los sistemas de prueba**. A diferencia de `data/results/`, este directorio está orientado principalmente a los resultados finales utilizados para la presentación, comparación y análisis de los indicadores.
+Contains the **final results and figures generated for the analysis of the test systems**. Unlike `data/results/`, this directory is mainly intended for the final results used for the presentation, comparison, and analysis of the indicators.
 
-Los resultados se organizan por sistema de prueba y tipo de escenario:
+The results are organized by test system and scenario type:
 
 ```text
 results/
@@ -146,35 +146,35 @@ results/
     └── IND/
 ```
 
-Dentro de cada directorio por tipo de generación se almacenan las gráficas y resultados finales correspondientes. Adicionalmente, se incluyen directorios destinados a diferentes tipos de visualización, como:
+Within each directory corresponding to a generation type, the associated plots and final results are stored. Additionally, directories intended for different types of visualization are included, such as:
 
-* `Graficas_SCR/`: gráficos relacionados con la evaluación de los indicadores por escenario.
-* `Matriz_Graficas_Derecha/`: matriz de gráficos correspondientes a los resultados comparativos para los indicadores basados en tensión.
-* `Matriz_Graficas_Izquierda/`: matrices de gráficos correspondientes a los resultados comparativos para los indicadores basados en corrientes de cortocircuito.
-* `Normalized graphs/`: gráficos comparativos de indicadores normalizados.
+* `Graficas_SCR/`: plots related to the evaluation of the indicators by scenario.
+* `Matriz_Graficas_Derecha/`: matrix of plots corresponding to comparative results for voltage-based indicators.
+* `Matriz_Graficas_Izquierda/`: matrix of plots corresponding to comparative results for short-circuit current-based indicators.
+* `Normalized graphs/`: comparative plots of normalized indicators.
 
-Finalmente, `README.md` contiene la documentación general del repositorio, incluyendo la descripción de la metodología, los requisitos, la estructura de archivos y las instrucciones necesarias para reproducir los análisis.
+Finally, `README.md` contains the general repository documentation, including the methodology description, requirements, file structure, and instructions required to reproduce the analyses.
 
-# Requisitos
+# Requirements
 
-Para ejecutar la metodología y reproducir los análisis presentados en el artículo, se requiere disponer de **DIgSILENT PowerFactory** y un entorno de **Python** con las librerías utilizadas por los scripts del repositorio.
+To execute the methodology and reproduce the analyses presented in the article, **DIgSILENT PowerFactory** and a **Python** environment with the libraries used by the repository scripts are required.
 
 ## Software
 
-* **DIgSILENT PowerFactory 2024 SP1** o una versión compatible con los archivos y scripts incluidos en el repositorio.
-* **Python 3.9 o superior**.
-* Un entorno de desarrollo para Python, como **Visual Studio Code**, Jupyter Notebook u otro entorno compatible.
+* **DIgSILENT PowerFactory 2024 SP1** or a version compatible with the files and scripts included in the repository.
+* **Python 3.9 or higher**.
+* A Python development environment, such as **Visual Studio Code**, Jupyter Notebook, or another compatible environment.
 
-## Librerías de Python
+## Python Libraries
 
-Los scripts utilizan principalmente las siguientes librerías:
+The scripts mainly use the following libraries:
 
-* `numpy`: operaciones numéricas y manipulación de matrices.
-* `pandas`: lectura, procesamiento y organización de datos tabulares.
-* `scipy`: operaciones y métodos utilizados en el procesamiento matemático y análisis de los resultados.
-* `matplotlib`: generación de gráficos y visualización de resultados.
+* `numpy`: numerical operations and matrix manipulation.
+* `pandas`: reading, processing, and organization of tabular data.
+* `scipy`: operations and methods used for mathematical processing and result analysis.
+* `matplotlib`: plot generation and result visualization.
 
-Las dependencias pueden instalarse mediante `pip`:
+The dependencies can be installed using `pip`:
 
 ```bash
 pip install numpy pandas scipy matplotlib
@@ -182,74 +182,73 @@ pip install numpy pandas scipy matplotlib
 
 ## DIgSILENT PowerFactory
 
-Parte de la metodología se ejecuta directamente en **DIgSILENT PowerFactory**, donde se realizan los estudios eléctricos y se generan los archivos de datos utilizados posteriormente por los scripts de Python.
+Part of the methodology is executed directly in **DIgSILENT PowerFactory**, where electrical studies are performed and the data files subsequently used by the Python scripts are generated.
 
-Los archivos asociados a PowerFactory se encuentran en el directorio:
+The PowerFactory-related files are located in:
 
 ```text
 powerfactory/
 ```
 
-El flujo general de ejecución consiste en:
+The general execution workflow is:
 
 ```text
 DIgSILENT PowerFactory
         │
-        │ Estudios eléctricos
+        │ Electrical studies
         ▼
-Exportación de datos
+Data export
         │
         ▼
 Python
         │
-        ├── Preprocesamiento
-        ├── Cálculo de indicadores
-        ├── Análisis
-        └── Visualización
+        ├── Preprocessing
+        ├── Indicator calculation
+        ├── Analysis
+        └── Visualization
         │
         ▼
-Resultados
+Results
 ```
 
+# Installation and Configuration
 
-# Instalación y configuración
+## 1. Clone the Repository
 
-## 1. Clonar el repositorio
-
-El repositorio puede clonarse utilizando Git:
+The repository can be cloned using Git:
 
 ```bash
 git clone <URL_DEL_REPOSITORIO>
 cd Grid-strength-assessment
 ```
 
-## 2. Crear un entorno virtual
+## 2. Create a Virtual Environment
 
-Se recomienda utilizar un entorno virtual de Python para mantener aisladas las dependencias del proyecto:
+It is recommended to use a Python virtual environment to keep the project dependencies isolated:
 
 ```bash
 python -m venv .venv
 ```
 
-Para activar el entorno virtual en Windows:
+To activate the virtual environment on Windows:
 
 ```powershell
 .venv\Scripts\activate
 ```
 
-## 3. Instalar las dependencias
+## 3. Install the Dependencies
 
-Una vez activado el entorno virtual, instalar las librerías requeridas:
+Once the virtual environment has been activated, install the required libraries:
 
 ```bash
 pip install numpy pandas scipy matplotlib
 ```
 
-## 4. Configuración de las rutas
+## 4. Path Configuration
 
-Los scripts del repositorio están organizados para trabajar utilizando rutas relativas a la estructura principal del proyecto. Esto permite ejecutar el código sin depender de rutas absolutas específicas del equipo donde se realiza el análisis.
+The repository scripts are organized to work using relative paths based on the main project structure. This allows the code to be executed without depending on specific absolute paths on the computer where the analysis is performed.
 
-La estructura base utilizada es:
+The base structure used is:
 
 ```text
 Grid-strength-assessment/
@@ -259,84 +258,100 @@ Grid-strength-assessment/
 └── results/
 ```
 
-Los archivos de entrada se encuentran principalmente en:
+The input files are mainly located in:
 
 ```text
 data/example/
 data/scenarios/
 ```
 
-mientras que los resultados generados por los procesos de análisis se almacenan en:
+while the results generated by the analysis processes are stored in:
 
 ```text
 data/results/
 results/
 ```
 
-Por lo tanto, se recomienda mantener la estructura de directorios del repositorio sin modificar los nombres de las carpetas principales.
+Therefore, it is recommended to preserve the repository directory structure without modifying the names of the main folders.
 
-## 5. Configuración de DIgSILENT PowerFactory
+## 5. DIgSILENT PowerFactory Configuration
 
-Los estudios que requieren DIgSILENT PowerFactory deben ejecutarse utilizando los modelos y scripts incluidos en:
+Studies requiring DIgSILENT PowerFactory must be executed using the models and scripts included in:
 
 ```text
 powerfactory/
 ```
 
-Antes de ejecutar estos estudios, se debe verificar que:
+Before executing these studies, verify that:
 
-1. DIgSILENT PowerFactory se encuentre correctamente instalado.
-2. La versión utilizada sea compatible con los archivos del repositorio.
-3. Los modelos de los sistemas de prueba estén disponibles.
-4. Las rutas de entrada y salida utilizadas por los scripts correspondan a la estructura del repositorio.
+1. DIgSILENT PowerFactory is correctly installed.
+2. The version being used is compatible with the repository files.
+3. The test system models are available.
+4. The input and output paths used by the scripts correspond to the repository structure.
 
-Los datos exportados desde PowerFactory son posteriormente utilizados por los scripts de Python para realizar el procesamiento, cálculo de indicadores y generación de resultados.
+The data exported from PowerFactory are subsequently used by the Python scripts for processing, indicator calculation, and result generation.
 
-# Descripción de la metodología
+# Methodology Description
 
-La metodología desarrollada tiene como objetivo evaluar la **fortaleza de red (Grid Strength)** en sistemas eléctricos de transmisión con alta penetración de generación basada en inversores (**IBR**). El procedimiento combina estudios realizados en **DIgSILENT PowerFactory** con herramientas de procesamiento y análisis desarrolladas en **Python**.
+The proposed methodology allows the assessment of grid strength in transmission systems with high penetration of inverter-based resources (IBR) through the calculation and comparison of different grid strength indicators.
 
-El flujo metodológico general se divide en las siguientes etapas:
+The procedure combines electrical information obtained from **DIgSILENT PowerFactory** with tools developed in **Python**. The methodological workflow starts from the test system model and continues with the extraction of network data, calculation of the `Ybus` and `Zbus` matrices, identification of electrically close buses, and integration of IBR sources at the selected buses.
+
+Subsequently, power sweeps are performed to identify the operating boundary of the system and select different operating points. These points are used to define the study scenarios under **capacitive (CAP)** and **inductive (IND)** operating conditions of the IBRs.
+
+For each scenario, the required electrical information is extracted and the following grid strength indicators are calculated:
+
+* **SCR** — Short Circuit Ratio.
+* **GSIM** — Grid Strength Impedance Metric.
+* **NRSCR** — Network Reduction Short Circuit Ratio.
+* **SDSCR** — indicator based on voltage sensitivity.
+* **λSCR** — indicator based on the eigenvalue associated with the system.
+* **K<sub>vtg</sub>** — indicator based on voltage sensitivity.
+
+Finally, the indicators are compared across scenarios and normalized with respect to their critical values, allowing their differences in behavior under different operating conditions to be analyzed.
+
+The general methodology workflow can be summarized as:
 
 ```text
-Selección del sistema de prueba
-            │
-            ▼
-Modelamiento del sistema en PowerFactory
-            │
-            ▼
-Exportación de la matriz Ybus
-            │
-            ▼
-Cálculo de la matriz Zbus
-            │
-            ▼
-Identificación de nodos eléctricamente cercanos
-            │
-            ▼
-Modelamiento de generadores basados en inversores (IBR)
-            │
-            ▼
-Análisis de barrido de potencia
-            │
-            ▼
-Definición de escenarios de operación
-            │
-            ▼
-Cálculo de indicadores de fortaleza de red
-            │
-            ▼
-Normalización y análisis comparativo
-            │
-            ▼
-Generación de resultados y visualizaciones
+Test system model
+          │
+          ▼
+    Data extraction
+          │
+          ▼
+       Ybus → Zbus
+          │
+          ▼
+Identification of
+electrically close buses
+          │
+          ▼
+    IBR modeling
+          │
+          ▼
+     Power sweep
+          │
+          ▼
+ Scenario selection
+          │
+          ▼
+ Scenario data
+   extraction
+          │
+          ▼
+Indicator calculation
+          │
+          ▼
+Comparison and normalization
 ```
 
-## 1. Selección de los sistemas de prueba
+The execution details for each stage are presented in the [Execution](#execution) section.
 
-La metodología se implementa utilizando los sistemas de prueba **IEEE de 9 y 39 nodos**, sin embargo es aplicable a cualquier otro sistema de pueba que pueda aportar la informacion basica para la evaluación.
+## 1. Test System Selection
 
-Los archivos correspondientes a los sistemas de prueba se encuentran en:
+The methodology is implemented using the **IEEE 9-bus and 39-bus test systems**; however, it can be applied to any other test system that can provide the basic information required for the assessment.
+
+The files corresponding to the test systems are located in:
 
 ```text
 data/example/
@@ -344,60 +359,61 @@ data/example/
 └── IEEE39/
 ```
 
-## 2. Modelamiento del sistema eléctrico
+## 2. Power System Modeling
 
-Los sistemas de prueba son implementados en **DIgSILENT PowerFactory**, donde se realizan los estudios eléctricos necesarios para obtener la información utilizada posteriormente por los scripts de Python.
+The test systems are implemented in **DIgSILENT PowerFactory**, where the electrical studies required to obtain the information subsequently used by the Python scripts are performed.
 
-Para representar la generación basada en inversores se utilizan modelos de plantas fotovoltaicas basados en el modelo **WECC PVsys**. Los estudios consideran diferentes condiciones de operación y factores de potencia, incluyendo escenarios **inductivos (IND)** y **capacitivos (CAP)**.
+To represent inverter-based generation, photovoltaic plant models based on the **WECC PVsys** model are used. The studies consider different operating conditions and power factors, including **inductive (IND)** and **capacitive (CAP)** scenarios.
 
-## 3. Obtención de la matriz de impedancias
+## 3. Obtaining the Impedance Matrix
 
-A partir del modelo de red se obtiene la matriz de admitancias nodales **Ybus**. Esta información se exporta desde PowerFactory y posteriormente se procesa mediante Python para obtener la matriz de impedancias nodales **Zbus**.
+The network **Ybus** matrix is obtained from the network model. This information is exported from PowerFactory and subsequently processed using Python to obtain the nodal impedance matrix **Zbus**.
 
-La matriz `Zbus` se utiliza como base para caracterizar las relaciones eléctricas entre los nodos del sistema.
+The `Zbus` matrix is used as the basis for characterizing the electrical relationships between the buses of the system.
 
-El script relacionado con esta etapa se encuentran en:
+The script associated with this stage is located at:
 
 ```text
 python/preprocessing/calculate_zbus.py
 ```
 
-## 4. Identificación de nodos eléctricamente cercanos
+## 4. Identification of Electrically Close Buses
 
-Utilizando la información obtenida de `Zbus`, se determina la proximidad eléctrica entre todos los nodos de la red. De este listado se deben seleccionar los nodos electricamente cercanos en donde se modelarán manualmente las fuentes de generación basada en inversores.
+Using the information obtained from `Zbus`, the electrical proximity between all buses in the network is determined. From this list, the electrically close buses where the inverter-based generation sources will be manually modeled must be selected.
 
-Esta etapa permite identificar los nodos que presentan una mayor interacción eléctrica y que, por lo tanto, deben considerarse conjuntamente en la evaluación de la fortaleza de red.
+This stage allows the identification of buses with greater electrical interaction and, therefore, that should be considered jointly in the grid strength assessment.
 
-Los resultados de este procesamiento se utilizan posteriormente para definir los grupos de generadores considerados en el cálculo de los indicadores.
+The results of this processing are subsequently used to define the generator groups considered in the calculation of the indicators.
 
-El script relacionado con esta etapa se encuentran en:
+The script associated with this stage is located at:
 
 ```text
 python/preprocessing/find_electrically_close_nodes.py
 ```
 
-## 5. Determinación de los límites de operación
+## 5. Determination of Operating Limits
 
-Se realiza un **barrido de potencia** para analizar la respuesta del sistema ante diferentes niveles de inyección de potencia activa de las fuentes IBR.
+A **power sweep** is performed to analyze the system response under different levels of active power injection from the IBR sources.
 
-Durante este procedimiento se monitorean las variables eléctricas del sistema y se identifican los puntos asociados con los límites de operación establecidos para el estudio.
+During this procedure, the electrical variables of the system are monitored and the points associated with the operating limits established for the study are identified.
 
-Los resultados del barrido permiten definir diferentes condiciones de operación que posteriormente son utilizadas para construir los escenarios de análisis.
+The sweep results are used to define different operating conditions that are subsequently used to construct the analysis scenarios.
 
-Los scripts relacionados con esta etapa se encuentran en:
+The scripts associated with this stage are located at:
 
 ```text
-poerfactory/python/analysis/Power Sweep IND.py
-poerfactory/python/analysis/Power Sweep CAP.py
+powerfactory/
+├── Power Sweep IND.py
+└── Power Sweep CAP.py
 ```
 
-## 6. Definición de escenarios
+## 6. Scenario Definition
 
-Los escenarios se construyen a partir de las condiciones de operación identificadas durante el análisis de los sistemas de prueba.
+The scenarios are constructed from the operating conditions identified during the analysis of the test systems.
 
-Para cada sistema se consideran diferentes niveles de penetración de generación basada en inversores y condiciones de factor de potencia. Los escenarios se organizan de acuerdo con el sistema, el tipo de factor de potencia y el nivel de operación considerado.
+For each system, different IBR penetration levels and power factor conditions are considered. The scenarios are organized according to the system, power factor type, and operating level considered.
 
-La información correspondiente a los escenarios se encuentra en:
+The scenario information is located in:
 
 ```text
 data/scenarios/
@@ -409,74 +425,72 @@ data/scenarios/
     └── IND/
 ```
 
-Cada condición contiene seis escenarios de operación, denominados `Escenario_1` a `Escenario_6`.
+Each condition contains six operating scenarios, named `Escenario_1` to `Escenario_6`.
 
-## 7. Cálculo de indicadores de fortaleza de red
+## 7. Grid Strength Indicator Calculation
 
-Para cada escenario se calculan diferentes indicadores empleados en la evaluación de la fortaleza de red. La metodología propuesta para el cálculo de estos indicadores puede aplicarse a cualquier indicador que cuente con una formulación matemática sólida y cuyas ecuaciones se encuentren plenamente identificadas y definidas para su implementación.
+For each scenario, different indicators used to assess grid strength are calculated. The proposed methodology for calculating these indicators can be applied to any indicator with a sound mathematical formulation whose equations are fully identified and defined for implementation.
 
-Entre los indicadores considerados se encuentran:
+The indicators considered include:
 
 * **SCR** — Short Circuit Ratio.
-* **WSCR** — Weighted Short Circuit Ratio.
-* **CSCR** — Composite Short Circuit Ratio.
 * **GSIM** — Grid Strength Impedance Metric.
 * **NRSCR** — Network Reduction Short Circuit Ratio.
 * **SDSCR** — Site Depend Short Circuit Ratio.
 * **λSCR** — Critical Short-Circuit Ratio.
-* **K_vtg** — Voltage Support Capability Indication.
+* **K<sub>vtg</sub>** — Voltage Support Capability Indication.
 
-Los códigos asociados al cálculo de estos indicadores se encuentran en:
+The code associated with the calculation of these indicators is located in:
 
 ```text
 python/indicators/
 ```
 
-El uso de diferentes indicadores permite comparar sus respuestas ante cambios en las condiciones de operación y en la penetración de IBR.
+The use of different indicators allows their responses to changes in operating conditions and IBR penetration to be compared.
 
-## 8. Normalización y análisis de resultados
+## 8. Result Normalization and Analysis
 
-Los valores obtenidos para los diferentes indicadores se procesan para facilitar su comparación. Cada indicador es normalizado en funcion con su valor critico.
+The values obtained for the different indicators are processed to facilitate their comparison. Each indicator is normalized according to its critical value.
 
-Posteriormente se realizan análisis comparativos y estadísticos para evaluar la relación entre los indicadores y las condiciones de operación del sistema.
+Subsequently, comparative and statistical analyses are performed to evaluate the relationship between the indicators and the operating conditions of the system.
 
-Los procesos correspondientes se encuentran principalmente en:
+The corresponding processes are mainly located in:
 
 ```text
-python/visualization/Indicador Comparative.py
+python/visualization/Indicator Comparative.py
 ```
 
-## 9. Visualización de resultados
+## 9. Result Visualization
 
-Finalmente, los resultados procesados se utilizan para generar las figuras y gráficos empleados en el análisis de la metodología.
+Finally, the processed results are used to generate the figures and plots employed in the analysis of the methodology.
 
-Las herramientas de visualización se encuentran en:
+The visualization tools are located in:
 
 ```text
 python/visualization/
 ```
 
-Los resultados finales se almacenan en:
+The final results are stored in:
 
 ```text
 results/
 ```
 
-y se organizan de acuerdo con el sistema de prueba, la condición de operación y el tipo de escenario.
+and are organized according to the test system, operating condition, and scenario type.
 
-De esta manera, el repositorio permite seguir el flujo completo desde la **obtención de la información basica de la red en DIgSILENT PowerFactory**, pasando por el **procesamiento y cálculo de indicadores en Python**, hasta la **generación de los resultados y visualizaciones utilizados en el análisis**.
+In this way, the repository allows the complete workflow to be followed, from **obtaining the basic network information in DIgSILENT PowerFactory**, through **data processing and indicator calculation in Python**, to the **generation of the results and visualizations used in the analysis**.
 
-# Ejecución
+# Execution
 
-La metodología se ejecuta mediante una secuencia de pasos que combina **DIgSILENT PowerFactory** y **Python**. El usuario debe seguir el orden establecido, ya que los resultados generados en cada etapa constituyen los archivos de entrada de las etapas posteriores.
+The methodology is executed through a sequence of steps combining **DIgSILENT PowerFactory** and **Python**. The user must follow the established order because the results generated at each stage constitute the input files for subsequent stages.
 
-El flujo completo de ejecución es:
+The complete execution workflow is:
 
 ```text
-Modelamiento del sistema en PowerFactory
+System modeling in PowerFactory
                 │
                 ▼
-     export_network_data.py
+      export_network_data.py
                 │
                 ▼
              Ybus
@@ -485,70 +499,70 @@ Modelamiento del sistema en PowerFactory
          calculate_zbus.py
                 │
                 ▼
-             Zbus
+              Zbus
                 │
                 ▼
- find_electrically_close_nodes.py
+  find_electrically_close_nodes.py
                 │
                 ▼
-     pares_nodos_cercanos.csv
+      pares_nodos_cercanos.csv
                 │
                 ▼
- Selección de nodos para los IBR
+    IBR bus selection
                 │
                 ▼
- Modelamiento de los IBR + WECC
+    IBR modeling + WECC
                 │
                 ▼
-   Power Sweep IND.py / CAP.py
+     Power Sweep IND.py / CAP.py
                 │
                 ▼
- boundary_PV1_PV2.csv
- boundary_plot_PV1_PV2.png
+  boundary_PV1_PV2.csv
+  boundary_plot_PV1_PV2.png
                 │
                 ▼
- Selección de puntos operativos
+  Operating point selection
                 │
                 ▼
- Potencias_Comp_PV1_PV2.xlsx
+  Potencias_Comp_PV1_PV2.xlsx
                 │
                 ▼
- extract_scenario_data.py
+  extract_scenario_data.py
                 │
                 ▼
- Información por escenario
+       Scenario information
                 │
                 ▼
-   calculate_indicators.py
+     calculate_indicators.py
                 │
                 ▼
- Resultados de indicadores
+     Indicator results
                 │
                 ▼
- Scenario Comparative.py
+     Scenario Comparative.py
                 │
                 ▼
- Gráficas comparativas
+     Comparative plots
                 │
                 ▼
- Indicator Comparative.py
+     Indicator Comparative.py
                 │
                 ▼
- Gráficas normalizadas
+     Normalized plots
 ```
 
-## Paso 1. Modelamiento del sistema de prueba
+## Step 1. Test System Modeling
 
-Inicialmente se debe disponer del modelo del sistema de prueba en **DIgSILENT PowerFactory**.
+Initially, the test system model must be available in **DIgSILENT PowerFactory**.
 
-La metodología puede aplicarse a los sistemas de prueba considerados en el repositorio:
+The methodology can be applied to the test systems included in the repository:
 
-* IEEE 9 nodos.
-* IEEE 39 nodos.
+* IEEE 9-bus system.
+* IEEE 39-bus system.
 
-El modelo debe contener la información necesaria de la red eléctrica, incluyendo líneas, transformadores, generadores, cargas y demás elementos requeridos para realizar los estudios.
+The model must contain the required electrical network information, including lines, transformers, generators, loads, and other elements required to perform the studies.
 
-Los archivos de entrada asociados a cada sistema se encuentran en:
+The input files associated with each system are located in:
 
 ```text
 data/example/
@@ -556,178 +570,179 @@ data/example/
 └── IEEE39/
 ```
 
-En esta etapa también se prepara el modelo de acuerdo con las condiciones de estudio requeridas.
+At this stage, the model is also prepared according to the required study conditions.
 
-## Paso 2. Exportación de los datos de red desde PowerFactory
+## Step 2. Network Data Export from PowerFactory
 
-Una vez preparado el modelo, se debe ejecutar internamente en **DIgSILENT PowerFactory** el script:
+Once the model has been prepared, the following script must be executed internally in **DIgSILENT PowerFactory**:
 
 ```text
 export_network_data.py
 ```
 
-El script se encuentra en:
+The script is located in:
 
 ```text
 powerfactory/
 ```
 
-Este script permite extraer del modelo de PowerFactory la información base de la red necesaria para las etapas posteriores, incluyendo la información utilizada para construir la matriz de admitancias nodales **Ybus**.
+This script extracts from the PowerFactory model the basic network information required for the subsequent stages, including the information used to construct the nodal admittance matrix **Ybus**.
 
-El script está diseñado para utilizar la estructura de directorios del repositorio. El usuario **no debe modificar el código**, excepto el nombre del ejemplo que se está procesando.
+The script is designed to use the repository directory structure. The user **must not modify the code**, except for the name of the example being processed.
 
-El lugar específico donde debe modificarse el nombre del ejemplo se encuentra **claramente indicado mediante comentarios dentro del propio script**.
+The specific location where the example name must be modified is **clearly indicated through comments within the script itself**.
 
-Al finalizar la ejecución, los archivos exportados se almacenan en el directorio correspondiente dentro de:
+Once execution is completed, the exported files are stored in the corresponding directory within:
 
 ```text
 data/example/
 ```
 
-Entre los archivos generados se encuentra la matriz **Ybus**, que será utilizada en el siguiente paso.
+Among the generated files is the **Ybus** matrix, which will be used in the next step.
 
-## Paso 3. Cálculo de la matriz Zbus
+## Step 3. Calculation of the Zbus Matrix
 
-Con los datos exportados desde PowerFactory, se ejecuta desde Python el script:
+Using the data exported from PowerFactory, the following script is executed from Python:
 
 ```text
 calculate_zbus.py
 ```
 
-ubicado en:
+located in:
 
 ```text
 python/preprocessing/
 ```
 
-El script utiliza la matriz **Ybus** generada en el paso anterior para calcular la matriz de impedancias nodales **Zbus**.
+The script uses the **Ybus** matrix generated in the previous step to calculate the nodal impedance matrix **Zbus**.
 
-La matriz `Zbus` generada se almacena en la misma ruta del ejemplo dentro de:
+The generated `Zbus` matrix is stored in the same example path within:
 
 ```text
 data/example/
 ```
 
-Esta matriz constituye la información de entrada necesaria para identificar los nodos eléctricamente cercanos.
+This matrix constitutes the input information required to identify electrically close buses.
 
-## Paso 4. Identificación de nodos eléctricamente cercanos
+## Step 4. Identification of Electrically Close Buses
 
-A continuación, se ejecuta desde Python:
+Next, the following script is executed from Python:
 
 ```text
 find_electrically_close_nodes.py
 ```
 
-ubicado en:
+located in:
 
 ```text
 python/preprocessing/
 ```
 
-El script utiliza la matriz **Zbus** calculada en el paso anterior para determinar las relaciones de proximidad eléctrica entre los nodos del sistema.
+The script uses the **Zbus** matrix calculated in the previous step to determine the electrical proximity relationships between the buses in the system.
 
-Como resultado, se genera el archivo:
+As a result, the following file is generated:
 
 ```text
 pares_nodos_cercanos.csv
 ```
 
-Este archivo se almacena en la misma ruta del ejemplo:
+This file is stored in the same example path:
 
 ```text
 data/example/
 ```
 
-El archivo contiene las parejas de nodos ordenadas de acuerdo con el criterio de proximidad eléctrica utilizado por la metodología.
+The file contains the bus pairs ordered according to the electrical proximity criterion used by the methodology.
 
-## Paso 5. Selección de los nodos para los IBR
+## Step 5. Selection of Buses for the IBRs
 
-La selección de los nodos donde se instalarán las fuentes de generación basada en inversores (**IBR**) se realiza manualmente.
+The selection of the buses where the **IBR** sources will be installed is performed manually.
 
-El usuario debe revisar:
+The user must review:
 
 ```text
 pares_nodos_cercanos.csv
 ```
 
-y seleccionar dos nodos eléctricamente cercanos que serán utilizados posteriormente para ubicar los generadores IBR.
+and select two electrically close buses that will subsequently be used to locate the IBR generators.
 
-Esta selección es necesaria debido a que la metodología busca evaluar la interacción entre fuentes IBR conectadas en nodos con una relación eléctrica significativa.
+This selection is necessary because the methodology aims to assess the interaction between IBR sources connected at buses with a significant electrical relationship.
 
-## Paso 6. Modelamiento de los IBR
+## Step 6. IBR Modeling
 
-Una vez seleccionados los nodos, se deben incorporar los generadores basados en inversores al modelo de PowerFactory en los nodos seleccionados.
+Once the buses have been selected, the inverter-based generators must be incorporated into the PowerFactory model at the selected buses.
 
-Los IBR deben utilizar un **modelo de control basado en WECC** compatible con el estudio.
+The IBRs must use a **WECC-based control model** compatible with the study.
 
-En esta etapa se deben configurar los parámetros necesarios del modelo de los generadores y verificar que el sistema pueda ejecutar correctamente los estudios de flujo de potencia.
+At this stage, the required parameters of the generator models must be configured and the system must be verified to ensure that power flow studies can be executed correctly.
 
-## Paso 7. Barrido de potencia
+## Step 7. Power Sweep
 
-Una vez incorporados los IBR, se realizan los barridos de potencia para determinar los límites de operación del sistema.
+Once the IBRs have been incorporated, power sweeps are performed to determine the operating limits of the system.
 
-Los scripts utilizados son:
+The scripts used are:
 
 ```text
-Power Sweep IND.py
-Power Sweep CAP.py
+powerfactory/
+├── Power Sweep IND.py
+└── Power Sweep CAP.py
 ```
 
-Estos scripts se ejecutan internamente en **DIgSILENT PowerFactory**.
+These scripts are executed internally in **DIgSILENT PowerFactory**.
 
-Los scripts corresponden a las dos condiciones de factor de potencia consideradas:
+The scripts correspond to the two power factor conditions considered:
 
-* `IND`: condición inductiva.
-* `CAP`: condición capacitiva.
+* `IND`: inductive condition.
+* `CAP`: capacitive condition.
 
-Para cada ejecución se debe verificar y modificar manualmente el tipo de factor de potencia de los IBR de acuerdo con el escenario que se desea analizar.
+For each execution, the power factor type of the IBRs must be verified and manually modified according to the scenario to be analyzed.
 
-El barrido permite evaluar diferentes combinaciones de potencia de los dos IBR y determinar la región de operación admisible del sistema.
+The sweep allows different power combinations of the two IBRs to be evaluated and the admissible operating region of the system to be determined.
 
-Como resultado se generan:
+The following files are generated:
 
 ```text
 boundary_plot_PV1_PV2.png
 boundary_PV1_PV2.csv
 ```
 
-Estos archivos se almacenan en la ruta correspondiente dentro de:
+These files are stored in the corresponding path within:
 
 ```text
 results/
 ```
 
-El archivo `boundary_plot_PV1_PV2.png` permite visualizar gráficamente la frontera de operación obtenida, mientras que `boundary_PV1_PV2.csv` contiene los datos asociados a dicha frontera.
+The `boundary_plot_PV1_PV2.png` file provides a graphical representation of the resulting operating boundary, while `boundary_PV1_PV2.csv` contains the data associated with that boundary.
 
-## Paso 8. Selección de los puntos operativos
+## Step 8. Selection of Operating Points
 
-A partir de la curva:
+From the curve:
 
 ```text
 boundary_plot_PV1_PV2.png
 ```
 
-el usuario debe identificar y seleccionar manualmente los puntos de operación que serán utilizados para construir los escenarios de estudio.
+the user must manually identify and select the operating points that will be used to construct the study scenarios.
 
-La selección debe considerar diferentes posiciones respecto de la frontera de operación, de acuerdo con los criterios establecidos en la metodología.
+The selection must consider different positions relative to the operating boundary, according to the criteria established in the methodology.
 
-Los puntos seleccionados representan las combinaciones de potencia activa de los dos IBR que serán analizadas posteriormente.
+The selected points represent the active power combinations of the two IBRs that will subsequently be analyzed.
 
-## Paso 9. Definición de los escenarios
+## Step 9. Scenario Definition
 
-Los puntos operativos seleccionados deben registrarse manualmente en el archivo:
+The selected operating points must be manually entered in the file:
 
 ```text
 Potencias_Comp_PV1_PV2.xlsx
 ```
 
-ubicado en:
+located in:
 
 ```text
 data/scenarios/
 ```
 
-Los escenarios deben definirse de manera independiente para cada condición de factor de potencia:
+The scenarios must be defined independently for each power factor condition:
 
 ```text
 data/scenarios/
@@ -739,147 +754,147 @@ data/scenarios/
     └── IND/
 ```
 
-## Paso 10. Extracción de información para cada escenario
+## Step 10. Information Extraction for Each Scenario
 
-Una vez diligenciado el archivo `Potencias_Comp_PV1_PV2.xlsx`, se ejecuta internamente en **DIgSILENT PowerFactory** el script:
+Once the `Potencias_Comp_PV1_PV2.xlsx` file has been completed, the following script is executed internally in **DIgSILENT PowerFactory**:
 
 ```text
 extract_scenario_data.py
 ```
 
-ubicado en:
+located in:
 
 ```text
 powerfactory/
 ```
 
-Antes de ejecutar el script, se debe verificar nuevamente el tipo de factor de potencia de los generadores IBR correspondiente al conjunto de escenarios que se desea procesar.
+Before executing the script, the power factor type of the IBR generators corresponding to the set of scenarios to be processed must be verified again.
 
-El script lee las combinaciones de potencia definidas en:
+The script reads the power combinations defined in:
 
 ```text
 Potencias_Comp_PV1_PV2.xlsx
 ```
 
-y ejecuta el procesamiento necesario para obtener la información eléctrica requerida para el cálculo posterior de los indicadores.
+and performs the processing required to obtain the electrical information necessary for the subsequent calculation of the indicators.
 
-Para cada escenario se genera la información correspondiente al punto de operación seleccionado.
+For each scenario, the information corresponding to the selected operating point is generated.
 
-Los resultados se almacenan en:
+The results are stored in:
 
 ```text
 data/results/
 ```
 
-organizados de acuerdo con:
+organized according to:
 
 ```text
-Sistema de prueba
-    └── Tipo de factor de potencia
-            └── Escenario
+Test system
+    └── Power factor type
+            └── Scenario
 ```
 
-Para cada escenario se generan las diferentes carpetas de información utilizadas por los indicadores.
+For each scenario, the different information folders used by the indicators are generated.
 
-## Paso 11. Cálculo de los indicadores
+## Step 11. Indicator Calculation
 
-Con la información obtenida para cada escenario, se ejecuta desde Python:
+Using the information obtained for each scenario, the following script is executed from Python:
 
 ```text
 calculate_indicators.py
 ```
 
-ubicado en:
+located in:
 
 ```text
 python/indicators/
 ```
 
-El script utiliza los resultados generados por el paso anterior y calcula los indicadores de fortaleza de red considerados en el estudio.
+The script uses the results generated in the previous step and calculates the grid strength indicators considered in the study.
 
-El procesamiento se realiza de manera independiente para cada escenario.
+The processing is performed independently for each scenario.
 
-Los resultados de cada indicador se almacenan en las carpetas correspondientes a cada escenario dentro de:
+The results of each indicator are stored in the corresponding scenario folders within:
 
 ```text
 data/results/
 ```
 
-De esta manera, los resultados quedan organizados según el sistema de prueba, el tipo de factor de potencia y el escenario analizado.
+In this way, the results are organized according to the test system, power factor type, and analyzed scenario.
 
-## Paso 12. Generación de gráficos comparativos por escenario
+## Step 12. Generation of Comparative Plots by Scenario
 
-Una vez calculados los indicadores, se ejecuta desde Python el script:
+Once the indicators have been calculated, the following Python script is executed:
 
 ```text
 Scenario Comparative.py
 ```
 
-ubicado en:
+located in:
 
 ```text
 python/visualization/
 ```
 
-El script utiliza los resultados calculados para cada escenario y genera gráficos comparativos que permiten analizar simultáneamente el comportamiento de los diferentes indicadores de fortaleza de red.
+The script uses the results calculated for each scenario and generates comparative plots that allow the behavior of the different grid strength indicators to be analyzed simultaneously.
 
-Los resultados se almacenan en:
+The results are stored in:
 
 ```text
 results/
 ```
 
-dentro del directorio correspondiente al sistema y al tipo de factor de potencia.
+within the directory corresponding to the system and power factor type.
 
-El script crea automáticamente la carpeta:
+The script automatically creates the folder:
 
 ```text
 Graficas_SCR/
 ```
 
-donde se almacenan las gráficas comparativas generadas.
+where the generated comparative plots are stored.
 
-## Paso 13. Normalización y comparación de indicadores
+## Step 13. Indicator Normalization and Comparison
 
-Finalmente, se ejecuta desde Python el script:
+Finally, the following Python script is executed:
 
 ```text
 Indicator Comparative.py
 ```
 
-ubicado en:
+located in:
 
 ```text
 python/visualization/
 ```
 
-Este script utiliza los mismos resultados de los indicadores obtenidos para cada escenario.
+This script uses the same indicator results obtained for each scenario.
 
-Inicialmente, los valores de los indicadores son procesados y **normalizados respecto a sus valores críticos**, permitiendo comparar indicadores que presentan diferentes escalas y rangos numéricos.
+Initially, the indicator values are processed and **normalized with respect to their critical values**, allowing indicators with different scales and numerical ranges to be compared.
 
-Posteriormente, el script genera las representaciones gráficas utilizadas para analizar la evolución y distribución de los indicadores normalizados, incluyendo gráficos de bigotes y curvas.
+Subsequently, the script generates the graphical representations used to analyze the evolution and distribution of the normalized indicators, including box-and-whisker plots and curves.
 
-Los resultados se almacenan en:
+The results are stored in:
 
 ```text
 results/
 ```
 
-dentro del directorio correspondiente al sistema y tipo de factor de potencia.
+within the directory corresponding to the system and power factor type.
 
-El script crea automáticamente la carpeta:
+The script automatically creates the folder:
 
 ```text
 Normalized graphs/
 ```
 
-donde se almacenan las figuras generadas.
+where the generated figures are stored.
 
-# Sistemas de prueba
+# Test Systems
 
-La metodología se implementa utilizando dos sistemas de prueba estandarizados de la literatura: el **IEEE 9-bus system** y el **IEEE 39-bus system**. Estos sistemas permiten evaluar el comportamiento de los indicadores de fortaleza de red bajo diferentes condiciones de operación y niveles de integración de generación basada en inversores (IBR).
+The methodology is implemented using two standardized test systems from the literature: the **IEEE 9-bus system** and the **IEEE 39-bus system**. These systems allow the behavior of the grid strength indicators to be evaluated under different operating conditions and levels of inverter-based generation (IBR) integration.
 
-Los archivos asociados a los sistemas de prueba se encuentran en:
+The files associated with the test systems are located in:
 
 ```text
 data/example/
@@ -887,18 +902,18 @@ data/example/
 └── IEEE39/
 ```
 
-## IEEE 9-bus system
+## IEEE 9-bus System
 
-El sistema IEEE de 9 nodos se utiliza como un sistema de prueba de menor tamaño para verificar el funcionamiento de la metodología y analizar la interacción entre fuentes IBR eléctricamente cercanas.
+The IEEE 9-bus system is used as a smaller test system to verify the operation of the methodology and analyze the interaction between electrically close IBR sources.
 
-Sobre este sistema se consideran dos fuentes de generación basada en inversores, denominadas **PV1** y **PV2**, ubicadas en los nodos seleccionados mediante el procedimiento de cercania eléctrica basado en la matriz `Zbus`.
+Two inverter-based generation sources, named **PV1** and **PV2**, are considered in this system. They are located at the buses selected through the electrical proximity procedure based on the `Zbus` matrix.
 
-Los estudios consideran dos condiciones de factor de potencia:
+Two power factor conditions are considered:
 
-* `CAP`: operación con factor de potencia capacitivo.
-* `IND`: operación con factor de potencia inductivo.
+* `CAP`: operation with capacitive power factor.
+* `IND`: operation with inductive power factor.
 
-Para cada condición se analizan seis escenarios de operación:
+For each condition, six operating scenarios are analyzed:
 
 ```text
 IEEE9/
@@ -919,18 +934,18 @@ IEEE9/
     └── Escenario_6
 ```
 
-## IEEE 39-bus system
+## IEEE 39-bus System
 
-El sistema IEEE de 39 nodos se utiliza como un sistema de prueba de mayor tamaño para evaluar la metodología en una red con una estructura eléctrica más compleja.
+The IEEE 39-bus system is used as a larger test system to evaluate the methodology in a network with a more complex electrical structure.
 
-Al igual que para el sistema IEEE de 9 nodos, se incorporan dos fuentes IBR, **PV1** y **PV2**, en nodos seleccionados a partir del análisis de cercania eléctrica mediante `Zbus`.
+As with the IEEE 9-bus system, two IBR sources, **PV1** and **PV2**, are incorporated at buses selected based on the electrical proximity analysis using `Zbus`.
 
-Se consideran las mismas dos condiciones de factor de potencia:
+The same two power factor conditions are considered:
 
-* `CAP`: operación con factor de potencia capacitivo.
-* `IND`: operación con factor de potencia inductivo.
+* `CAP`: operation with capacitive power factor.
+* `IND`: operation with inductive power factor.
 
-Cada condición contiene seis escenarios de operación:
+Each condition contains six operating scenarios:
 
 ```text
 IEEE39/
@@ -951,150 +966,77 @@ IEEE39/
     └── Escenario_6
 ```
 
-## Organización de los casos de estudio
+## Study Case Organization
 
-En conjunto, los sistemas de prueba permiten evaluar:
+Overall, the test systems allow the following cases to be evaluated:
 
-| Sistema       | Condición | Escenarios |
-| ------------- | --------- | ---------: |
-| IEEE 9 nodos  | CAP       |          6 |
-| IEEE 9 nodos  | IND       |          6 |
-| IEEE 39 nodos | CAP       |          6 |
-| IEEE 39 nodos | IND       |          6 |
+| System      | Condition | Scenarios |
+| ----------- | --------- | --------: |
+| IEEE 9-bus  | CAP       |         6 |
+| IEEE 9-bus  | IND       |         6 |
+| IEEE 39-bus | CAP       |         6 |
+| IEEE 39-bus | IND       |         6 |
 
-Por lo tanto, la metodología considera **24 condiciones de escenario** entre los dos sistemas de prueba y las dos condiciones de factor de potencia.
+Therefore, the methodology considers **24 scenario conditions** across the two test systems and the two power factor conditions.
 
-La información asociada a los escenarios se encuentra en:
+The information associated with the scenarios is located in:
 
 ```text
 data/scenarios/
 ```
 
-mientras que los datos intermedios y resultados generados durante el procesamiento se almacenan en:
+while the intermediate data and results generated during processing are stored in:
 
 ```text
 data/results/
 ```
 
-y los resultados finales y figuras en:
+and the final results and figures are stored in:
 
 ```text
 results/
 ```
 
-Esta organización permite ejecutar y analizar cada sistema de prueba de manera independiente, manteniendo separados los escenarios correspondientes a las condiciones capacitivas e inductivas.
+This organization allows each test system to be executed and analyzed independently while keeping the scenarios corresponding to capacitive and inductive conditions separate.
 
-# Datos de entrada
+# Input Data
 
-La metodología utiliza diferentes archivos de datos durante las etapas de modelamiento, preprocesamiento, definición de escenarios y cálculo de indicadores. Algunos de estos archivos corresponden a **datos de entrada definidos previamente**, mientras que otros son **archivos intermedios generados automáticamente durante la ejecución**.
+The files used by the methodology are organized according to the stage of the procedure in which they are generated or used. The main data structure is:
 
-Los archivos se organizan principalmente en los directorios:
-
-```text id="d2m1l9"
-data/example/
-data/scenarios/
-data/results/
+```text
+data/
+├── example/
+├── scenarios/
+└── results/
 ```
 
-## 1. Datos de los sistemas de prueba
+## Test System Data
 
-Los archivos de entrada correspondientes a los sistemas IEEE de 9 y 39 nodos se encuentran en:
+The data corresponding to the IEEE systems used in the study are located in:
 
-```text id="1kq6qg"
+```text
 data/example/
 ├── IEEE9/
 └── IEEE39/
 ```
 
-Estos directorios contienen la información necesaria para representar cada sistema de prueba y constituyen el punto de partida del flujo de procesamiento.
+These directories contain the network information files exported from DIgSILENT PowerFactory and used during the preprocessing and indicator calculation stages.
 
-A partir del modelo implementado en DIgSILENT PowerFactory, se genera la información eléctrica que posteriormente será procesada mediante Python.
+The main generated files include:
 
-## 2. Archivos exportados desde PowerFactory
+| File                                | Description                                                         |
+| ----------------------------------- | ------------------------------------------------------------------- |
+| `Ybus_export.csv`                   | Nodal admittance matrix used to calculate `Zbus`.                   |
+| `corrientes_generadores.csv`        | Generator current information.                                      |
+| `tensiones_nodos.csv`               | Bus voltage information.                                            |
+| `potencias_activas_generadores.csv` | Generator active power information.                                 |
+| `cortocircuito_trifasico.csv`       | Information associated with three-phase short-circuit calculations. |
 
-El script:
+## Scenario Definition
 
-```text id="f1b5z8"
-export_network_data.py
-```
+The scenarios used for the IEEE9 and IEEE39 systems are organized according to the test system and power factor condition:
 
-extrae desde DIgSILENT PowerFactory la información eléctrica requerida para el procesamiento posterior.
-
-Entre los archivos generados se encuentran:
-
-| Archivo                             | Descripción                                                             |
-| ----------------------------------- | ----------------------------------------------------------------------- |
-| `Ybus_export.csv`                   | Matriz de admitancias nodales utilizada para calcular la matriz `Zbus`. |
-| `corrientes_generadores.csv`        | Información de las corrientes asociadas a los generadores.              |
-| `tensiones_nodos.csv`               | Tensiones de los nodos del sistema.                                     |
-| `potencias_activas_generadores.csv` | Potencias activas de los generadores.                                   |
-| `cortocircuito_trifasico.csv`       | Información asociada al cálculo de cortocircuito trifásico.             |
-
-Estos archivos son almacenados en el directorio correspondiente al sistema de prueba dentro de:
-
-```text id="n5z8tq"
-data/example/
-```
-
-El archivo `Ybus_export.csv` constituye la entrada principal para el cálculo de la matriz de impedancias nodales.
-
-## 3. Matriz de impedancias `Zbus`
-
-A partir de:
-
-```text id="g0m6tz"
-Ybus_export.csv
-```
-
-se ejecuta el script:
-
-```text id="8byqf5"
-calculate_zbus.py
-```
-
-El script calcula la matriz de impedancias nodales `Zbus` y exporta el resultado en el mismo directorio del sistema de prueba.
-
-La matriz `Zbus` es posteriormente utilizada por:
-
-```text id="m4h5jd"
-find_electrically_close_nodes.py
-```
-
-para determinar la proximidad eléctrica entre los nodos de la red.
-
-## 4. Pares de nodos eléctricamente cercanos
-
-El script:
-
-```text id="h0kn6s"
-find_electrically_close_nodes.py
-```
-
-utiliza la matriz `Zbus` para identificar pares de nodos eléctricamente cercanos.
-
-Como resultado se genera:
-
-```text id="e2t4y7"
-pares_nodos_cercanos.csv
-```
-
-Este archivo contiene las parejas de nodos obtenidas mediante el criterio de cercania eléctrica empleado por la metodología.
-
-El usuario debe revisar este archivo y seleccionar los dos nodos que serán utilizados posteriormente para conectar las fuentes IBR.
-
-## 5. Archivo de definición de escenarios
-
-Una vez seleccionados los nodos y realizados los barridos de potencia, los puntos de operación seleccionados se registran en:
-
-```text id="f7v2k1"
-Potencias_Comp_PV1_PV2.xlsx
-```
-
-Este archivo se utiliza para definir las combinaciones de potencia de **PV1** y **PV2** correspondientes a los diferentes escenarios de estudio.
-
-Los escenarios se organizan según:
-
-```text id="m5r7q3"
+```text
 data/scenarios/
 ├── IEEE9/
 │   ├── CAP/
@@ -1104,155 +1046,73 @@ data/scenarios/
     └── IND/
 ```
 
-Para cada condición se consideran seis escenarios:
+Each condition contains the file:
 
-```text id="j2v8s4"
-Escenario_1
-Escenario_2
-Escenario_3
-Escenario_4
-Escenario_5
-Escenario_6
+```text
+Potencias_Comp_PV1_PV2.xlsx
 ```
 
-La información contenida en este archivo es posteriormente utilizada por `extract_scenario_data.py`.
+This file contains the PV1 and PV2 power combinations used to define the operating scenarios.
 
-## 6. Datos de cada escenario
+## Data Generated by Scenario
 
-El script:
+The intermediate results associated with each scenario are stored in:
 
-```text id="q9s6w2"
-extract_scenario_data.py
-```
-
-lee las condiciones definidas en `Potencias_Comp_PV1_PV2.xlsx` y genera la información eléctrica necesaria para el cálculo de los indicadores.
-
-Los datos generados se almacenan en:
-
-```text id="v3c7n1"
+```text
 data/results/
 ```
 
-manteniendo la organización por:
+and are organized according to the test system, power factor condition, and corresponding scenario.
 
-```text id="x6m4p8"
-Sistema de prueba
-    └── Factor de potencia
-            └── Escenario
+These data contain the information subsequently required by `calculate_indicators.py`.
+
+## Operating Boundary Data
+
+The power sweeps generate the following files:
+
+```text
+boundary_PV1_PV2.csv
+boundary_plot_PV1_PV2.png
 ```
 
-Dentro de cada escenario se generan diferentes grupos de información utilizados por los scripts de cálculo de indicadores.
+The CSV file contains the operating boundary data, while the image allows the boundary to be visualized and the operating points used to define the scenarios to be selected.
 
-Entre ellos se encuentran directorios relacionados con:
+## Indicator Results
 
-```text id="r8k2d5"
-Datos GSIM/
-ExportZ_Python/
-Informacion SCR/
-Positive/
-SDSCR INFO/
-```
+The results calculated for the indicators:
 
-Estos archivos constituyen las entradas utilizadas posteriormente por `calculate_indicators.py`.
+* SCR
+* GSIM
+* NRSCR
+* SDSCR
+* λSCR
+* K<sub>vtg</sub>
 
-## 7. Datos utilizados para el cálculo de indicadores
+are stored together with the information corresponding to each scenario.
 
-El script:
+These results constitute the input for the visualization and comparison scripts.
 
-```text id="w4p9c6"
-calculate_indicators.py
-```
+# Results
 
-utiliza la información generada para cada escenario y calcula los diferentes indicadores de fortaleza de red considerados en el estudio.
+The results generated during the application of the methodology are organized in the directory:
 
-Los resultados correspondientes a cada escenario se almacenan en la estructura de:
-
-```text id="u7n3x5"
-data/results/
-```
-
-Estos resultados constituyen posteriormente la entrada para los scripts de análisis y visualización.
-
-## 8. Archivos utilizados para la generación de resultados
-
-Los scripts de visualización utilizan los resultados de los indicadores calculados para generar las figuras correspondientes.
-
-En particular:
-
-```text id="e1r5k9"
-Scenario Comparative.py
-```
-
-utiliza los resultados de los indicadores para generar las gráficas comparativas por escenario.
-
-Posteriormente:
-
-```text id="c6m8v2"
-Indicator Comparative.py
-```
-
-utiliza los mismos resultados para realizar la normalización de los indicadores y generar las gráficas comparativas normalizadas.
-
-Los resultados finales se almacenan en:
-
-```text id="p4q7s1"
+```text
 results/
-```
-
-organizados por sistema de prueba y condición de factor de potencia.
-
-## Resumen de los archivos principales
-
-La siguiente tabla resume los principales archivos utilizados durante el flujo de ejecución:
-
-| Archivo                       | Generado por                                | Utilizado por                      | Función                                               |
-| ----------------------------- | ------------------------------------------- | ---------------------------------- | ----------------------------------------------------- |
-| `Ybus_export.csv`             | `export_network_data.py`                    | `calculate_zbus.py`                | Matriz de admitancias nodales.                        |
-| `Zbus`                        | `calculate_zbus.py`                         | `find_electrically_close_nodes.py` | Matriz de impedancias nodales.                        |
-| `pares_nodos_cercanos.csv`    | `find_electrically_close_nodes.py`          | Usuario                            | Identificación de nodos eléctricamente cercanos.      |
-| `boundary_PV1_PV2.csv`        | `Power Sweep IND.py` / `Power Sweep CAP.py` | Usuario                            | Datos de la frontera de operación.                    |
-| `boundary_plot_PV1_PV2.png`   | `Power Sweep IND.py` / `Power Sweep CAP.py` | Usuario                            | Visualización de la frontera de operación.            |
-| `Potencias_Comp_PV1_PV2.xlsx` | Usuario                                     | `extract_scenario_data.py`         | Definición de los puntos operativos y escenarios.     |
-| Datos por escenario           | `extract_scenario_data.py`                  | `calculate_indicators.py`          | Información eléctrica para el cálculo de indicadores. |
-| Resultados de indicadores     | `calculate_indicators.py`                   | Scripts de visualización           | Valores de los indicadores para cada escenario.       |
-| Gráficas comparativas         | `Scenario Comparative.py`                   | Usuario / artículo                 | Comparación de indicadores por escenario.             |
-| Gráficas normalizadas         | `Indicator Comparative.py`                  | Usuario / artículo                 | Comparación normalizada de los indicadores.           |
-
-> **Nota:** Los archivos generados durante el procesamiento no deben modificarse manualmente, excepto aquellos cuya edición se indique explícitamente en el procedimiento de ejecución, como `Potencias_Comp_PV1_PV2.xlsx`.
-
-# Resultados
-
-El repositorio contiene los resultados obtenidos durante la aplicación de la metodología a los sistemas de prueba **IEEE de 9 y 39 nodos**, considerando las condiciones de operación **capacitiva (CAP)** e **inductiva (IND)** de las fuentes IBR.
-
-Los resultados se encuentran organizados en dos niveles:
-
-* `data/results/`: contiene los **datos y resultados intermedios** generados durante el procesamiento de los escenarios.
-* `results/`: contiene los **resultados finales y las visualizaciones** utilizadas para el análisis y comparación de los indicadores.
-
-## 1. Resultados intermedios
-
-Los resultados intermedios se almacenan en:
-
-```text id="g7m4p2"
-data/results/
 ├── IEEE9/
 │   ├── CAP/
-│   ├── IND/
-│   ├── IEEE9C/
-│   └── IEEE9I/
-│
+│   └── IND/
 └── IEEE39/
     ├── CAP/
-    ├── IND/
-    ├── IEEE39C/
-    └── IEEE39I/
+    └── IND/
 ```
 
-Los directorios `CAP` e `IND` contienen los resultados correspondientes a los escenarios con factores de potencia capacitivo e inductivo, respectivamente.
+The structure allows the results to be consulted independently for each test system and power factor condition.
 
-Cada condición contiene seis escenarios:
+## Results by Scenario
 
-```text id="j5n8q3"
+Within each condition, the results corresponding to the six considered scenarios are included:
+
+```text
 Escenario_1/
 Escenario_2/
 Escenario_3/
@@ -1261,228 +1121,165 @@ Escenario_5/
 Escenario_6/
 ```
 
-Dentro de cada escenario se almacenan los archivos requeridos para el cálculo de los indicadores, incluyendo información relacionada con:
+These results contain the calculated values of the grid strength indicators:
 
-* Datos utilizados para **GSIM**.
-* Matrices de impedancia y resultados del procesamiento mediante Python.
-* Información requerida para los indicadores basados en **SCR**.
-* Resultados asociados a los puntos de operación considerados.
-* Información requerida para el cálculo de **SDSCR**.
+* **SCR**
+* **GSIM**
+* **NRSCR**
+* **SDSCR**
+* **λSCR**
+* **K<sub>vtg</sub>**
 
-Estos resultados constituyen los datos de entrada para las etapas posteriores de cálculo, análisis y visualización.
+## Graphical Results
 
-## 2. Resultados finales
+In addition to numerical results, the repository contains the visualizations used to compare the indicators.
 
-Los resultados finales se encuentran en:
+The main graphical result folders include:
 
-```text id="k2f6v9"
-results/
-├── IEEE9/
-│   ├── CAP/
-│   └── IND/
-│
-└── IEEE39/
-    ├── CAP/
-    └── IND/
-```
-
-Cada directorio contiene los resultados correspondientes al sistema de prueba y a la condición de factor de potencia analizada.
-
-Dentro de estos directorios se encuentran los resultados gráficos organizados principalmente en:
-
-```text id="s8w1c4"
+```text
 Graficas_SCR/
 Matriz_Graficas_Derecha/
 Matriz_Graficas_Izquierda/
 Normalized graphs/
 ```
 
-## 3. Gráficas comparativas por escenario
-
-El directorio:
-
-```text id="m6q9t2"
-Graficas_SCR/
-```
-
-contiene las gráficas generadas mediante:
-
-```text id="z1v5k8"
-Scenario Comparative.py
-```
-
-Estas figuras permiten comparar el comportamiento de los diferentes indicadores de fortaleza de red para los escenarios analizados.
-
-Las gráficas se organizan de acuerdo con el sistema de prueba y la condición de factor de potencia correspondiente.
-
-## 4. Gráficas de indicadores normalizados
-
-El directorio:
-
-```text id="n4p7s3"
-Normalized graphs/
-```
-
-contiene las figuras generadas mediante:
-
-```text id="c8w2m6"
-Indicator Comparative.py
-```
-
-En esta etapa, los indicadores son normalizados respecto a sus valores críticos con el propósito de facilitar la comparación entre métricas que presentan diferentes escalas y criterios de evaluación.
-
-Las visualizaciones permiten analizar la evolución de los indicadores y comparar su comportamiento bajo las diferentes condiciones de operación consideradas.
-
-## 5. Organización general de los resultados
-
-De manera resumida, la organización de los resultados puede representarse como:
-
-```text id="q7d3f8"
-results/
-│
-├── IEEE9/
-│   ├── CAP/
-│   │   ├── Escenario_1/
-│   │   ├── Escenario_2/
-│   │   ├── ...
-│   │   ├── Escenario_6/
-│   │   ├── Graficas_SCR/
-│   │   ├── Matriz_Graficas_Derecha/
-│   │   ├── Matriz_Graficas_Izquierda/
-│   │   ├── Inorm_Figuras/
-│   │   └── Normalized graphs/
-│   │
-│   └── IND/
-│       └── ...
-│
-└── IEEE39/
-    ├── CAP/
-    │   └── ...
-    │
-    └── IND/
-        └── ...
-```
-
-De esta manera, los resultados pueden consultarse y analizarse de forma independiente para cada sistema, condición de operación y escenario.
-
-## 6. Indicadores evaluados
-
-Los resultados incluyen los indicadores de fortaleza de red considerados en la metodología, entre ellos:
-
-* **SCR** — Short Circuit Ratio.
-* **GSIM** — Grid Strength Impedance Metric.
-* **NRSCR** — Network Reduction Short Circuit Ratio.
-* **SDSCR** — Short Circuit Ratio basado en sensibilidad de tensión.
-* **K<sub>vtg</sub>**.
-* **λSCR**.
-
-Estos indicadores se calculan para cada escenario y posteriormente se comparan tanto en sus valores originales como mediante los procedimientos de normalización establecidos en la metodología.
-
-Los resultados obtenidos permiten analizar las diferencias entre los indicadores y evaluar su comportamiento ante cambios en las condiciones de operación y en la penetración de generación basada en inversores.
-
-# Reproducibilidad
-
-El repositorio ha sido estructurado con el propósito de facilitar la **reproducción de la metodología y de los análisis presentados en el artículo de investigación**. Para ello, se incluyen los scripts de procesamiento, los archivos de entrada, los escenarios de operación, los datos intermedios y los resultados correspondientes a los sistemas de prueba IEEE de 9 y 39 nodos.
-
-La reproducción completa del procedimiento requiere la interacción entre **DIgSILENT PowerFactory** y **Python**, siguiendo el flujo de ejecución descrito en la sección [Ejecución](#ejecución).
-
-## Flujo de reproducción
-
-De manera general, la reproducción de los resultados sigue el siguiente flujo:
+For the IEEE9 system, the following folder is also included:
 
 ```text
-Sistema de prueba
-       │
-       ▼
-Modelamiento en PowerFactory
-       │
-       ▼
-Exportación de datos de red
-       │
-       ▼
-Cálculo de Zbus
-       │
-       ▼
-Identificación de nodos eléctricamente cercanos
-       │
-       ▼
-Selección y modelamiento de los IBR
-       │
-       ▼
-Barrido de potencia
-       │
-       ▼
-Selección de puntos operativos
-       │
-       ▼
-Definición de escenarios
-       │
-       ▼
-Extracción de datos por escenario
-       │
-       ▼
-Cálculo de indicadores
-       │
-       ▼
-Análisis y visualización
+Inorm_Figuras/
 ```
 
-## Elementos necesarios para la reproducción
+The `Graficas_SCR/` folder contains the comparative plots of the indicators for the different scenarios.
 
-Para reproducir el procedimiento se requiere disponer de los siguientes elementos:
+The `Normalized graphs/` folder contains the plots obtained after normalizing the indicators with respect to their critical values, facilitating comparison between metrics with different scales.
 
-1. **Modelo del sistema de prueba** en DIgSILENT PowerFactory.
-2. **Scripts de PowerFactory** incluidos en el directorio `powerfactory/`.
-3. **Scripts de Python** incluidos en los directorios `python/`.
-4. **Datos de entrada** incluidos en `data/example/`.
-5. **Definición de escenarios** incluida en `data/scenarios/`.
-6. **Dependencias de Python** descritas en la sección [Requisitos](#requisitos).
+The `Matriz_Graficas_Derecha/` and `Matriz_Graficas_Izquierda/` folders contain the matrix representations used to jointly analyze the results of the different scenarios.
 
-## Etapas que requieren intervención manual
+## Result Organization
 
-Aunque una parte importante del procesamiento está automatizada mediante los scripts incluidos en el repositorio, algunas etapas requieren intervención del usuario.
+In general, the results can be accessed following the structure:
 
-En particular:
+```text
+Test system
+        │
+        ▼
+Power factor
+        │
+        ▼
+Scenario
+        │
+        ▼
+Indicator results
+        │
+        ▼
+Visualizations
+```
 
-### Selección de nodos IBR
+This organization allows the results corresponding to a specific operating condition to be identified without mixing data from different systems or scenarios.
 
-Después de ejecutar `find_electrically_close_nodes.py`, el usuario debe revisar:
+# Reproducibility
+
+The repository has been structured to facilitate the **reproduction of the methodology and the analyses presented in the research article**. For this purpose, the processing scripts, input files, operating scenarios, intermediate data, and results corresponding to the IEEE 9-bus and 39-bus test systems are included.
+
+The complete reproduction of the procedure requires interaction between **DIgSILENT PowerFactory** and **Python**, following the execution workflow described in the [Execution](#execution) section.
+
+## Reproduction Workflow
+
+In general, the reproduction of the results follows the workflow below:
+
+```text
+Test system
+       │
+       ▼
+PowerFactory modeling
+       │
+       ▼
+Network data export
+       │
+       ▼
+Zbus calculation
+       │
+       ▼
+Identification of electrically close buses
+       │
+       ▼
+IBR selection and modeling
+       │
+       ▼
+Power sweep
+       │
+       ▼
+Operating point selection
+       │
+       ▼
+Scenario definition
+       │
+       ▼
+Scenario data extraction
+       │
+       ▼
+Indicator calculation
+       │
+       ▼
+Analysis and visualization
+```
+
+## Required Elements for Reproduction
+
+To reproduce the procedure, the following elements are required:
+
+1. **Test system model** in DIgSILENT PowerFactory.
+2. **PowerFactory scripts** included in the `powerfactory/` directory.
+3. **Python scripts** included in the `python/` directories.
+4. **Input data** included in `data/example/`.
+5. **Scenario definitions** included in `data/scenarios/`.
+6. **Python dependencies** described in the [Requirements](#requirements) section.
+
+## Stages Requiring Manual Intervention
+
+Although a significant portion of the processing is automated through the scripts included in the repository, some stages require user intervention.
+
+In particular:
+
+### IBR Bus Selection
+
+After executing `find_electrically_close_nodes.py`, the user must review:
 
 ```text
 pares_nodos_cercanos.csv
 ```
 
-y seleccionar los nodos que serán utilizados para conectar las fuentes IBR.
+and select the buses that will be used to connect the IBR sources.
 
-### Modelamiento de los IBR
+### IBR Modeling
 
-Los dos IBR deben incorporarse manualmente al modelo de PowerFactory en los nodos seleccionados y configurarse utilizando el modelo de control **WECC**.
+The two IBRs must be manually incorporated into the PowerFactory model at the selected buses and configured using the **WECC** control model.
 
-### Selección de puntos operativos
+### Operating Point Selection
 
-Después de ejecutar los scripts de barrido de potencia, el usuario debe revisar:
+After executing the power sweep scripts, the user must review:
 
 ```text
 boundary_plot_PV1_PV2.png
 ```
 
-y seleccionar los puntos operativos que serán utilizados para construir los escenarios.
+and select the operating points that will be used to construct the scenarios.
 
-### Definición de escenarios
+### Scenario Definition
 
-Los puntos seleccionados deben registrarse manualmente en:
+The selected points must be manually entered in:
 
 ```text
 Potencias_Comp_PV1_PV2.xlsx
 ```
 
-Los escenarios deben definirse de manera independiente para las condiciones `CAP` e `IND`.
+The scenarios must be defined independently for the `CAP` and `IND` conditions.
 
-Estas intervenciones manuales forman parte del procedimiento metodológico y permiten adaptar la metodología a diferentes sistemas de prueba y condiciones de operación.
+These manual interventions are part of the methodological procedure and allow the methodology to be adapted to different test systems and operating conditions.
 
-## Reproducción de los resultados finales
+## Reproduction of the Final Results
 
-Una vez definidos los escenarios, los resultados pueden reproducirse siguiendo las etapas automatizadas:
+Once the scenarios have been defined, the results can be reproduced by following the automated stages:
 
 ```text
 extract_scenario_data.py
@@ -1497,44 +1294,44 @@ Scenario Comparative.py
 Indicator Comparative.py
 ```
 
-Los datos intermedios generados durante el procesamiento se almacenan en:
+The intermediate data generated during processing are stored in:
 
 ```text
 data/results/
 ```
 
-mientras que las figuras y resultados finales se almacenan en:
+while the figures and final results are stored in:
 
 ```text
 results/
 ```
 
-La comparación entre los resultados reproducidos y los resultados incluidos en el repositorio permite verificar el comportamiento de los indicadores bajo las mismas condiciones de operación.
+The comparison between the reproduced results and the results included in the repository allows the behavior of the indicators to be verified under the same operating conditions.
 
-## Casos incluidos en el repositorio
+## Cases Included in the Repository
 
-El repositorio contiene los resultados correspondientes a los siguientes casos:
+The repository contains the results corresponding to the following cases:
 
-| Sistema       | Factor de potencia | Escenarios |
-| ------------- | ------------------ | ---------: |
-| IEEE 9 nodos  | Capacitivo (`CAP`) |          6 |
-| IEEE 9 nodos  | Inductivo (`IND`)  |          6 |
-| IEEE 39 nodos | Capacitivo (`CAP`) |          6 |
-| IEEE 39 nodos | Inductivo (`IND`)  |          6 |
+| System      | Power factor       | Scenarios |
+| ----------- | ------------------ | --------: |
+| IEEE 9-bus  | Capacitive (`CAP`) |         6 |
+| IEEE 9-bus  | Inductive (`IND`)  |         6 |
+| IEEE 39-bus | Capacitive (`CAP`) |         6 |
+| IEEE 39-bus | Inductive (`IND`)  |         6 |
 
-En total, se incluyen **24 condiciones de escenario** correspondientes a las combinaciones de sistema de prueba, factor de potencia y escenario de operación.
+In total, **24 scenario conditions** are included, corresponding to the combinations of test system, power factor, and operating scenario.
 
-## Recomendaciones para la reproducción
+## Recommendations for Reproduction
 
-Para obtener resultados comparables con los incluidos en el repositorio, se recomienda:
+To obtain results comparable with those included in the repository, the following recommendations should be followed:
 
-* Mantener la estructura de directorios original del repositorio.
-* Utilizar una versión compatible de DIgSILENT PowerFactory.
-* Mantener las mismas configuraciones de los modelos IBR utilizados en el estudio.
-* Utilizar el modelo de control WECC para los IBR.
-* Mantener las condiciones de factor de potencia correspondientes a cada conjunto de escenarios.
-* No modificar los archivos generados automáticamente durante el procesamiento.
-* Ejecutar los scripts en el orden establecido en la sección [Ejecución](#ejecución).
-* Modificar únicamente los parámetros cuya modificación se indique explícitamente en cada script.
+* Maintain the original repository directory structure.
+* Use a compatible version of DIgSILENT PowerFactory.
+* Maintain the same configurations of the IBR models used in the study.
+* Use the WECC control model for the IBRs.
+* Maintain the power factor conditions corresponding to each set of scenarios.
+* Do not modify automatically generated files during processing.
+* Execute the scripts in the order established in the [Execution](#execution) section.
+* Modify only the parameters whose modification is explicitly indicated in each script.
 
-La combinación de los archivos incluidos en el repositorio y el flujo de ejecución documentado permite reproducir el procedimiento de evaluación de fuerza de red presentado en el artículo para los sistemas de prueba considerados.
+The combination of the files included in the repository and the documented execution workflow allows the grid strength assessment procedure presented in the article to be reproduced for the test systems considered.
