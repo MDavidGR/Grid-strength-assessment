@@ -1078,11 +1078,9 @@ Como resultado se genera:
 pares_nodos_cercanos.csv
 ```
 
-Este archivo contiene las parejas de nodos obtenidas mediante el criterio de proximidad eléctrica empleado por la metodología.
+Este archivo contiene las parejas de nodos obtenidas mediante el criterio de cercania eléctrica empleado por la metodología.
 
 El usuario debe revisar este archivo y seleccionar los dos nodos que serán utilizados posteriormente para conectar las fuentes IBR.
-
----
 
 ## 5. Archivo de definición de escenarios
 
@@ -1118,8 +1116,6 @@ Escenario_6
 ```
 
 La información contenida en este archivo es posteriormente utilizada por `extract_scenario_data.py`.
-
----
 
 ## 6. Datos de cada escenario
 
@@ -1159,8 +1155,6 @@ SDSCR INFO/
 
 Estos archivos constituyen las entradas utilizadas posteriormente por `calculate_indicators.py`.
 
----
-
 ## 7. Datos utilizados para el cálculo de indicadores
 
 El script:
@@ -1178,8 +1172,6 @@ data/results/
 ```
 
 Estos resultados constituyen posteriormente la entrada para los scripts de análisis y visualización.
-
----
 
 ## 8. Archivos utilizados para la generación de resultados
 
@@ -1209,8 +1201,6 @@ results/
 
 organizados por sistema de prueba y condición de factor de potencia.
 
----
-
 ## Resumen de los archivos principales
 
 La siguiente tabla resume los principales archivos utilizados durante el flujo de ejecución:
@@ -1229,3 +1219,322 @@ La siguiente tabla resume los principales archivos utilizados durante el flujo d
 | Gráficas normalizadas         | `Indicator Comparative.py`                  | Usuario / artículo                 | Comparación normalizada de los indicadores.           |
 
 > **Nota:** Los archivos generados durante el procesamiento no deben modificarse manualmente, excepto aquellos cuya edición se indique explícitamente en el procedimiento de ejecución, como `Potencias_Comp_PV1_PV2.xlsx`.
+
+# Resultados
+
+El repositorio contiene los resultados obtenidos durante la aplicación de la metodología a los sistemas de prueba **IEEE de 9 y 39 nodos**, considerando las condiciones de operación **capacitiva (CAP)** e **inductiva (IND)** de las fuentes IBR.
+
+Los resultados se encuentran organizados en dos niveles:
+
+* `data/results/`: contiene los **datos y resultados intermedios** generados durante el procesamiento de los escenarios.
+* `results/`: contiene los **resultados finales y las visualizaciones** utilizadas para el análisis y comparación de los indicadores.
+
+## 1. Resultados intermedios
+
+Los resultados intermedios se almacenan en:
+
+```text id="g7m4p2"
+data/results/
+├── IEEE9/
+│   ├── CAP/
+│   ├── IND/
+│   ├── IEEE9C/
+│   └── IEEE9I/
+│
+└── IEEE39/
+    ├── CAP/
+    ├── IND/
+    ├── IEEE39C/
+    └── IEEE39I/
+```
+
+Los directorios `CAP` e `IND` contienen los resultados correspondientes a los escenarios con factores de potencia capacitivo e inductivo, respectivamente.
+
+Cada condición contiene seis escenarios:
+
+```text id="j5n8q3"
+Escenario_1/
+Escenario_2/
+Escenario_3/
+Escenario_4/
+Escenario_5/
+Escenario_6/
+```
+
+Dentro de cada escenario se almacenan los archivos requeridos para el cálculo de los indicadores, incluyendo información relacionada con:
+
+* Datos utilizados para **GSIM**.
+* Matrices de impedancia y resultados del procesamiento mediante Python.
+* Información requerida para los indicadores basados en **SCR**.
+* Resultados asociados a los puntos de operación considerados.
+* Información requerida para el cálculo de **SDSCR**.
+
+Estos resultados constituyen los datos de entrada para las etapas posteriores de cálculo, análisis y visualización.
+
+## 2. Resultados finales
+
+Los resultados finales se encuentran en:
+
+```text id="k2f6v9"
+results/
+├── IEEE9/
+│   ├── CAP/
+│   └── IND/
+│
+└── IEEE39/
+    ├── CAP/
+    └── IND/
+```
+
+Cada directorio contiene los resultados correspondientes al sistema de prueba y a la condición de factor de potencia analizada.
+
+Dentro de estos directorios se encuentran los resultados gráficos organizados principalmente en:
+
+```text id="s8w1c4"
+Graficas_SCR/
+Matriz_Graficas_Derecha/
+Matriz_Graficas_Izquierda/
+Normalized graphs/
+```
+
+## 3. Gráficas comparativas por escenario
+
+El directorio:
+
+```text id="m6q9t2"
+Graficas_SCR/
+```
+
+contiene las gráficas generadas mediante:
+
+```text id="z1v5k8"
+Scenario Comparative.py
+```
+
+Estas figuras permiten comparar el comportamiento de los diferentes indicadores de fortaleza de red para los escenarios analizados.
+
+Las gráficas se organizan de acuerdo con el sistema de prueba y la condición de factor de potencia correspondiente.
+
+## 4. Gráficas de indicadores normalizados
+
+El directorio:
+
+```text id="n4p7s3"
+Normalized graphs/
+```
+
+contiene las figuras generadas mediante:
+
+```text id="c8w2m6"
+Indicator Comparative.py
+```
+
+En esta etapa, los indicadores son normalizados respecto a sus valores críticos con el propósito de facilitar la comparación entre métricas que presentan diferentes escalas y criterios de evaluación.
+
+Las visualizaciones permiten analizar la evolución de los indicadores y comparar su comportamiento bajo las diferentes condiciones de operación consideradas.
+
+## 5. Organización general de los resultados
+
+De manera resumida, la organización de los resultados puede representarse como:
+
+```text id="q7d3f8"
+results/
+│
+├── IEEE9/
+│   ├── CAP/
+│   │   ├── Escenario_1/
+│   │   ├── Escenario_2/
+│   │   ├── ...
+│   │   ├── Escenario_6/
+│   │   ├── Graficas_SCR/
+│   │   ├── Matriz_Graficas_Derecha/
+│   │   ├── Matriz_Graficas_Izquierda/
+│   │   ├── Inorm_Figuras/
+│   │   └── Normalized graphs/
+│   │
+│   └── IND/
+│       └── ...
+│
+└── IEEE39/
+    ├── CAP/
+    │   └── ...
+    │
+    └── IND/
+        └── ...
+```
+
+De esta manera, los resultados pueden consultarse y analizarse de forma independiente para cada sistema, condición de operación y escenario.
+
+## 6. Indicadores evaluados
+
+Los resultados incluyen los indicadores de fortaleza de red considerados en la metodología, entre ellos:
+
+* **SCR** — Short Circuit Ratio.
+* **GSIM** — Grid Strength Impedance Metric.
+* **NRSCR** — Network Reduction Short Circuit Ratio.
+* **SDSCR** — Short Circuit Ratio basado en sensibilidad de tensión.
+* **K<sub>vtg</sub>**.
+* **λSCR**.
+
+Estos indicadores se calculan para cada escenario y posteriormente se comparan tanto en sus valores originales como mediante los procedimientos de normalización establecidos en la metodología.
+
+Los resultados obtenidos permiten analizar las diferencias entre los indicadores y evaluar su comportamiento ante cambios en las condiciones de operación y en la penetración de generación basada en inversores.
+
+# Reproducibilidad
+
+El repositorio ha sido estructurado con el propósito de facilitar la **reproducción de la metodología y de los análisis presentados en el artículo de investigación**. Para ello, se incluyen los scripts de procesamiento, los archivos de entrada, los escenarios de operación, los datos intermedios y los resultados correspondientes a los sistemas de prueba IEEE de 9 y 39 nodos.
+
+La reproducción completa del procedimiento requiere la interacción entre **DIgSILENT PowerFactory** y **Python**, siguiendo el flujo de ejecución descrito en la sección [Ejecución](#ejecución).
+
+## Flujo de reproducción
+
+De manera general, la reproducción de los resultados sigue el siguiente flujo:
+
+```text
+Sistema de prueba
+       │
+       ▼
+Modelamiento en PowerFactory
+       │
+       ▼
+Exportación de datos de red
+       │
+       ▼
+Cálculo de Zbus
+       │
+       ▼
+Identificación de nodos eléctricamente cercanos
+       │
+       ▼
+Selección y modelamiento de los IBR
+       │
+       ▼
+Barrido de potencia
+       │
+       ▼
+Selección de puntos operativos
+       │
+       ▼
+Definición de escenarios
+       │
+       ▼
+Extracción de datos por escenario
+       │
+       ▼
+Cálculo de indicadores
+       │
+       ▼
+Análisis y visualización
+```
+
+## Elementos necesarios para la reproducción
+
+Para reproducir el procedimiento se requiere disponer de los siguientes elementos:
+
+1. **Modelo del sistema de prueba** en DIgSILENT PowerFactory.
+2. **Scripts de PowerFactory** incluidos en el directorio `powerfactory/`.
+3. **Scripts de Python** incluidos en los directorios `python/`.
+4. **Datos de entrada** incluidos en `data/example/`.
+5. **Definición de escenarios** incluida en `data/scenarios/`.
+6. **Dependencias de Python** descritas en la sección [Requisitos](#requisitos).
+
+## Etapas que requieren intervención manual
+
+Aunque una parte importante del procesamiento está automatizada mediante los scripts incluidos en el repositorio, algunas etapas requieren intervención del usuario.
+
+En particular:
+
+### Selección de nodos IBR
+
+Después de ejecutar `find_electrically_close_nodes.py`, el usuario debe revisar:
+
+```text
+pares_nodos_cercanos.csv
+```
+
+y seleccionar los nodos que serán utilizados para conectar las fuentes IBR.
+
+### Modelamiento de los IBR
+
+Los dos IBR deben incorporarse manualmente al modelo de PowerFactory en los nodos seleccionados y configurarse utilizando el modelo de control **WECC**.
+
+### Selección de puntos operativos
+
+Después de ejecutar los scripts de barrido de potencia, el usuario debe revisar:
+
+```text
+boundary_plot_PV1_PV2.png
+```
+
+y seleccionar los puntos operativos que serán utilizados para construir los escenarios.
+
+### Definición de escenarios
+
+Los puntos seleccionados deben registrarse manualmente en:
+
+```text
+Potencias_Comp_PV1_PV2.xlsx
+```
+
+Los escenarios deben definirse de manera independiente para las condiciones `CAP` e `IND`.
+
+Estas intervenciones manuales forman parte del procedimiento metodológico y permiten adaptar la metodología a diferentes sistemas de prueba y condiciones de operación.
+
+## Reproducción de los resultados finales
+
+Una vez definidos los escenarios, los resultados pueden reproducirse siguiendo las etapas automatizadas:
+
+```text
+extract_scenario_data.py
+        │
+        ▼
+calculate_indicators.py
+        │
+        ▼
+Scenario Comparative.py
+        │
+        ▼
+Indicator Comparative.py
+```
+
+Los datos intermedios generados durante el procesamiento se almacenan en:
+
+```text
+data/results/
+```
+
+mientras que las figuras y resultados finales se almacenan en:
+
+```text
+results/
+```
+
+La comparación entre los resultados reproducidos y los resultados incluidos en el repositorio permite verificar el comportamiento de los indicadores bajo las mismas condiciones de operación.
+
+## Casos incluidos en el repositorio
+
+El repositorio contiene los resultados correspondientes a los siguientes casos:
+
+| Sistema       | Factor de potencia | Escenarios |
+| ------------- | ------------------ | ---------: |
+| IEEE 9 nodos  | Capacitivo (`CAP`) |          6 |
+| IEEE 9 nodos  | Inductivo (`IND`)  |          6 |
+| IEEE 39 nodos | Capacitivo (`CAP`) |          6 |
+| IEEE 39 nodos | Inductivo (`IND`)  |          6 |
+
+En total, se incluyen **24 condiciones de escenario** correspondientes a las combinaciones de sistema de prueba, factor de potencia y escenario de operación.
+
+## Recomendaciones para la reproducción
+
+Para obtener resultados comparables con los incluidos en el repositorio, se recomienda:
+
+* Mantener la estructura de directorios original del repositorio.
+* Utilizar una versión compatible de DIgSILENT PowerFactory.
+* Mantener las mismas configuraciones de los modelos IBR utilizados en el estudio.
+* Utilizar el modelo de control WECC para los IBR.
+* Mantener las condiciones de factor de potencia correspondientes a cada conjunto de escenarios.
+* No modificar los archivos generados automáticamente durante el procesamiento.
+* Ejecutar los scripts en el orden establecido en la sección [Ejecución](#ejecución).
+* Modificar únicamente los parámetros cuya modificación se indique explícitamente en cada script.
+
+La combinación de los archivos incluidos en el repositorio y el flujo de ejecución documentado permite reproducir el procedimiento de evaluación de fuerza de red presentado en el artículo para los sistemas de prueba considerados.
